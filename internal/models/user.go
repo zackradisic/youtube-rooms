@@ -3,7 +3,7 @@ package models
 import "github.com/jinzhu/gorm"
 
 // User is identified by their discord ID, and we keep track of their last known discord
-// username and discriminator (i.e. bob#9832)
+// username and discriminator (i.e. bob#9832).
 type User struct {
 	gorm.Model
 	DiscordID                string `gorm:"UNIQUE;UNIQUE_INDEX;NOT NULL"`
