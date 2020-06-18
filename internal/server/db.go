@@ -2,13 +2,12 @@ package server
 
 import (
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql" // MySQL driver
 	"github.com/zackradisic/youtube-rooms/internal/models"
 )
 
 func (s *Server) setupDB() (*gorm.DB, error) {
-	// Using SQLite for development, may want to consider
-	// changing to MySQL or Postgres later for production
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open("mysql", "root@/youtube_rooms?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		return nil, err
 	}
@@ -16,7 +15,7 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	defer db.Close()
 
 	// Be careful! AutoMigrate() won't update existing columns or delete them!
-	db.AutoMigrate(&models.User{}, &models.UserAuth{})
-
+	user, userAuth, room, video := &models.User{}, &models.UserAuth{}, &models.Room{}, &models.Video{}
+	db.AutoMigrate(user, userAuth, room, video)
 	return db, nil
 }

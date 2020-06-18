@@ -31,6 +31,13 @@ func NewServer() *Server {
 	s.setupRoutes()
 	s.setupAuth()
 
+	db, err := s.setupDB()
+	if err != nil {
+		panic("Error initializing DB: " + err.Error())
+	}
+
+	s.DB = db
+
 	return s
 }
 
