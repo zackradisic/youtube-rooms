@@ -6,7 +6,7 @@ import "github.com/jinzhu/gorm"
 // username and discriminator (i.e. bob#9832).
 type User struct {
 	gorm.Model
-	DiscordID                string `gorm:"UNIQUE;UNIQUE_INDEX;NOT NULL"`
+	DiscordID                string `gorm:"type:VARCHAR(100);UNIQUE;UNIQUE_INDEX;NOT NULL"`
 	LastDiscordUsername      string `gorm:"type:VARCHAR(32)"`
 	LastDiscordDiscriminator string `gorm:"type:VARCHAR(4)"`
 }
