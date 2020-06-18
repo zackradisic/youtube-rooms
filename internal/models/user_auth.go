@@ -8,4 +8,5 @@ type UserAuth struct {
 	AccessToken  string `gorm:"type:VARCHAR(30);index"`
 	RefreshToken string `gorm:"type:VARCHAR(30);index"`
 	ExpiresIn    uint   `gorm:"type:UNSIGNED INT(10);index"`
+	User         uint   `gorm:"foreignkey:user_auth_user_fk_user_id"`
 }
