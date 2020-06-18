@@ -10,3 +10,8 @@ type UserAuth struct {
 	ExpiresIn    uint   `gorm:"type:UNSIGNED INT(10);index"`
 	User         uint   `gorm:"foreignkey:user_auth_user_fk_user_id"`
 }
+
+// TableName sets the UserAuth model's table name as user_auth
+func (UserAuth) TableName() string {
+	return "user_auth"
+}
