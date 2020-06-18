@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gorilla/sessions"
+	"github.com/jinzhu/gorm"
 
 	"github.com/gorilla/mux"
 )
@@ -17,6 +18,7 @@ type Server struct {
 	router       *mux.Router
 	sessionStore *sessions.CookieStore
 	authDetails  *authDetails
+	DB           *gorm.DB
 }
 
 // NewServer creates a server
