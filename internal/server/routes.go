@@ -9,19 +9,28 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
+
+	"github.com/zackradisic/youtube-rooms/internal/ws"
 )
 
 func (s *Server) setupRoutes() {
-	// s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())
-
 	apiRouter := s.router.PathPrefix("/api/").Subrouter()
-
 	s.addRoute(apiRouter, "GET", "/auth/discord/", s.handleBeginAuth())
 	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.handleCompleteAuth())
+
+	s.addRoute(s.router, "GET", "/ws", s.handleWS())
+
+	s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())
 }
 
 func (s *Server) addRoute(router *mux.Router, method string, path string, handler func(http.ResponseWriter, *http.Request)) {
 	router.HandleFunc(path, handler).Methods(method)
+}
+
+func (s *Server) handleWS() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ws.Serve(s.Hub, w, r)
+	}
 }
 
 func (s *Server) handleCompleteAuth() http.HandlerFunc {

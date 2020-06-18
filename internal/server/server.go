@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
+	"github.com/zackradisic/youtube-rooms/internal/ws"
 
 	"github.com/gorilla/mux"
 )
@@ -19,6 +20,7 @@ type Server struct {
 	sessionStore *sessions.CookieStore
 	authDetails  *authDetails
 	DB           *gorm.DB
+	Hub          *ws.Hub
 }
 
 // NewServer creates a server
@@ -26,10 +28,13 @@ func NewServer() *Server {
 	s := &Server{
 		router:       mux.NewRouter().StrictSlash(true),
 		sessionStore: sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET"))),
+		Hub:          ws.NewHub(),
 	}
 
 	s.setupRoutes()
 	s.setupAuth()
+
+	go s.Hub.Run()
 
 	db, err := s.setupDB()
 	if err != nil {
