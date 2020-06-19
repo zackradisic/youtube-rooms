@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql" // MySQL driver
 	"github.com/zackradisic/youtube-rooms/internal/models"
@@ -24,11 +26,12 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 }
 
 func (s *Server) createUser(userInfo *discordUserInfoResponse, authToken *AuthToken) (*models.User, error) {
+
 	user := &models.User{}
 	auth := &models.UserAuth{}
 	auth.AccessToken = authToken.AccessToken
 	auth.RefreshToken = authToken.RefreshToken
-	auth.ExpiresIn = authToken.ExpiresIn
+	auth.ExpiresAt = time.Now().Add(time.Second * time.Duration(int64(authToken.ExpiresIn)))
 
 	tx := s.DB.Begin()
 	if err := tx.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
