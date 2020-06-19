@@ -1,12 +1,10 @@
 package room
 
-import "time"
+import "github.com/zackradisic/youtube-rooms/internal/models"
 
 // User represents a user in the room
 type User struct {
-	DiscordID            string
-	DiscordUsername      string
-	DiscordDiscriminator string
-	AccessToken          string
-	AccessTokenExpiry    *time.Time
+	models.User
+	models.UserAuth
+	CurrentRoom *Room
 }
