@@ -8,7 +8,8 @@ type UserAuth struct {
 	AccessToken  string `gorm:"type:VARCHAR(30);index"`
 	RefreshToken string `gorm:"type:VARCHAR(30);index"`
 	ExpiresIn    uint   `gorm:"index"`
-	User         uint   `gorm:"foreignkey:user_auth_user_fk_users_id;UNIQUE_INDEX;NOT_NULL"`
+	UserID       uint   `gorm:"UNIQUE_INDEX;NOT_NULL"`
+	User         User
 }
 
 // TableName sets the UserAuth model's table name as user_auth

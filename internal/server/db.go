@@ -15,22 +15,62 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	// Be careful! AutoMigrate() won't update existing columns or delete them!
 	user, userAuth, room, video := &models.User{}, &models.UserAuth{}, &models.Room{}, &models.Video{}
 	db.AutoMigrate(user, userAuth, room, video)
+	db.Model(&models.UserAuth{}).AddForeignKey("user_id", "users(id)", "CASCADE", "CASCADE")
+	db.Model(&models.Room{}).AddForeignKey("owner_id", "users(id)", "CASCADE", "CASCADE")
+	db.Model(&models.Video{}).AddForeignKey("room_id", "rooms(id)", "CASCADE", "CASCADE")
+	db.Model(&models.Video{}).AddForeignKey("requester_id", "users(id)", "CASCADE", "CASCADE")
+
 	return db, nil
 }
 
 func (s *Server) createUser(userInfo *discordUserInfoResponse, authToken *AuthToken) (*models.User, error) {
 	user := &models.User{}
-	if err := s.DB.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
+	auth := &models.UserAuth{}
+	auth.AccessToken = authToken.AccessToken
+	auth.RefreshToken = authToken.RefreshToken
+	auth.ExpiresIn = authToken.ExpiresIn
+
+	tx := s.DB.Begin()
+	if err := tx.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			user.DiscordID = userInfo.ID
 			user.LastDiscordUsername = userInfo.Username
 			user.LastDiscordDiscriminator = userInfo.Discriminator
-			if err = s.DB.Create(user).Error; err != nil {
+
+			if err = tx.Create(user).Error; err != nil {
+				tx.Rollback()
 				return nil, err
 			}
+
+			auth.UserID = user.ID
+			if err := tx.Create(auth).Error; err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+
+			tx.Commit()
 		} else {
+			tx.Rollback()
 			return nil, err
 		}
+
+		return user, nil
+	}
+
+	auth.UserID = user.ID
+	if err := s.DB.Model(auth).Update(auth).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := s.DB.Model(user).Update("last_discord_username", userInfo.Username).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := s.DB.Model(user).Update("last_discord_discriminator", userInfo.Discriminator).Error; err != nil {
+		tx.Rollback()
+		return nil, err
 	}
 
 	return user, nil
