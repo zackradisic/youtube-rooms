@@ -10,7 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
+	"github.com/jinzhu/gorm"
 
+	"github.com/zackradisic/youtube-rooms/internal/models"
 	"github.com/zackradisic/youtube-rooms/internal/ws"
 )
 
@@ -34,7 +36,7 @@ func (s *Server) handleWS() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		decoder := json.Decoder(r.Body)
+		decoder := json.NewDecoder(r.Body)
 		rBody := &requestBody{}
 
 		if err := decoder.Decode(rBody); err != nil {
@@ -42,7 +44,7 @@ func (s *Server) handleWS() http.HandlerFunc {
 			return
 		}
 
-		if requestBody.roomName != nil && requestBody.roomName != "" {
+		if rBody.roomName != "" {
 			s.respondError(w, "Invalid room name", http.StatusBadRequest)
 			return
 		}
@@ -89,7 +91,28 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 					log.Fatal(err)
 				}
 
-				fmt.Println(authToken.AccessToken)
+				userInfo, err := s.getDiscordUserInfo(authToken.AccessToken, authToken.RefreshToken)
+				if err != nil {
+					s.respondError(w, "There was an error getting your Discord info", 500)
+					return
+				}
+
+				user := &models.User{}
+				if err := s.DB.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
+					if gorm.IsRecordNotFoundError(err) {
+						user.LastDiscordUsername = userInfo.Username
+						user.LastDiscordDiscriminator = userInfo.Discriminator
+						if err = s.DB.Create(user).Error; err != nil {
+							s.respondError(w, "Error accessing your user info", http.StatusInternalServerError)
+							return
+						}
+					} else {
+						s.respondError(w, "Error accessing your user info", http.StatusInternalServerError)
+						return
+					}
+				}
+
+				fmt.Println(user.ID, user.LastDiscordUsername, user.LastDiscordDiscriminator)
 				return
 			}
 		}

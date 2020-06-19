@@ -35,6 +35,13 @@ type authorizationCodeRequestData struct {
 	Scope        string `json:"scope"`
 }
 
+type discordUserInfoResponse struct {
+	ID            string `json:"id"`
+	Username      string `json:"username"`
+	Avatar        string `json:"avatar"`
+	Discriminator string `json:"discriminator"`
+}
+
 func (s *Server) setupAuth() {
 	a := &authDetails{
 		ClientID:     os.Getenv("DISCORD_CLIENT_ID"),
@@ -90,6 +97,31 @@ func (s *Server) getAuthorizationCode(code string) (*AuthToken, error) {
 	}
 
 	return authToken, nil
+}
+
+func (s *Server) getDiscordUserInfo(accessToken string, refreshToken string) (*discordUserInfoResponse, error) {
+	// TO-DO: Add logic to use refresh token if access token is expired
+
+	url := "https://discord.com/api/v6/users/@me"
+	req, err := http.NewRequest("GET", url, strings.NewReader(""))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	decoder := json.NewDecoder(resp.Body)
+	data := &discordUserInfoResponse{}
+	if err := decoder.Decode(data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (s *Server) isAuthenticated() {
