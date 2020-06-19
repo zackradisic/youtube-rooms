@@ -12,8 +12,6 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	defer db.Close()
-
 	// Be careful! AutoMigrate() won't update existing columns or delete them!
 	user, userAuth, room, video := &models.User{}, &models.UserAuth{}, &models.Room{}, &models.Video{}
 	db.AutoMigrate(user, userAuth, room, video)
