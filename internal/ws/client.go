@@ -46,6 +46,8 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	room string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -121,13 +123,22 @@ func (c *Client) writePump() {
 }
 
 // Serve handles websocket requests from the peer.
-func Serve(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func Serve(roomName string, hub *Hub, w http.ResponseWriter, r *http.Request) {
+
+	// This is unsafe, remove this after development
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+
+	// Call the room manager to determine if the room exists in the cache, if not
+	// search the DB and create the Room object if found
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), room: roomName}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

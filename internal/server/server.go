@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
+	"github.com/zackradisic/youtube-rooms/internal/room"
 	"github.com/zackradisic/youtube-rooms/internal/ws"
 
 	"github.com/gorilla/mux"
@@ -21,6 +22,7 @@ type Server struct {
 	authDetails  *authDetails
 	DB           *gorm.DB
 	Hub          *ws.Hub
+	RoomManager  *room.Manager
 }
 
 // NewServer creates a server
@@ -42,6 +44,7 @@ func NewServer() *Server {
 	}
 
 	s.DB = db
+	s.RoomManager = room.NewManager(db)
 
 	return s
 }

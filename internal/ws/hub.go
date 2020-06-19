@@ -42,6 +42,11 @@ func (h *Hub) Run() {
 				close(client.send)
 			}
 		case message := <-h.broadcast:
+			if err := h.invokeAction(message); err != nil {
+				// Do something about the error, perhaps send an
+				// error message back to the client
+			}
+
 			for client := range h.clients {
 				select {
 				case client.send <- message:

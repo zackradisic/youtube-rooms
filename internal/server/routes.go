@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,8 +29,25 @@ func (s *Server) addRoute(router *mux.Router, method string, path string, handle
 }
 
 func (s *Server) handleWS() http.HandlerFunc {
+	type requestBody struct {
+		roomName string
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		ws.Serve(s.Hub, w, r)
+		decoder := json.Decoder(r.Body)
+		rBody := &requestBody{}
+
+		if err := decoder.Decode(rBody); err != nil {
+			s.respondError(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if requestBody.roomName != nil && requestBody.roomName != "" {
+			s.respondError(w, "Invalid room name", http.StatusBadRequest)
+			return
+		}
+
+		ws.Serve(rBody.roomName, s.Hub, w, r)
 	}
 }
 

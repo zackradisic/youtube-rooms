@@ -13,4 +13,20 @@
 <body>
     <h1>hi</h1>
 </body>
+
+<script type="text/javascript">
+  window.onload = () => {
+    
+    if (window["WebSocket"]) {
+      const con = new WebSocket('ws://localhost:3000/ws')
+
+      con.onmessage = evt => {
+        console.log(evt.data)
+      }
+
+      const sample = JSON.stringify({ action: 'select-video', data: 'https://www.youtube.com/watch?v=rWBSMsLG8po' })
+      setTimeout(() => con.send(sample), 3000)
+    }
+  }
+</script>
 </html>
