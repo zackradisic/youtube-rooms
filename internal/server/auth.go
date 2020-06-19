@@ -86,6 +86,10 @@ func (s *Server) getAuthorizationCode(code string) (*AuthToken, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("There was an error authorizing your Discord account")
+	}
+
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 

@@ -3,16 +3,12 @@ package server
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
-	"github.com/jinzhu/gorm"
 
-	"github.com/zackradisic/youtube-rooms/internal/models"
 	"github.com/zackradisic/youtube-rooms/internal/ws"
 )
 
@@ -54,6 +50,12 @@ func (s *Server) handleWS() http.HandlerFunc {
 }
 
 func (s *Server) handleCompleteAuth() http.HandlerFunc {
+	type response struct {
+		Username      string     `json:"username"`
+		Discriminator string     `json:"discriminator"`
+		Avatar        string     `json:"avatar"`
+		Auth          *AuthToken `json:"auth"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.sessionStore.Get(r, "session")
 		if err != nil {
@@ -86,9 +88,10 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 			if codeValues, ok := queryParams["code"]; ok {
 				code := codeValues[0]
 				authToken, err := s.getAuthorizationCode(code)
-				fmt.Println(authToken)
+
 				if err != nil {
-					log.Fatal(err)
+					s.respondError(w, "Invalid credentials provided", 403)
+					return
 				}
 
 				userInfo, err := s.getDiscordUserInfo(authToken.AccessToken, authToken.RefreshToken)
@@ -97,22 +100,19 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 					return
 				}
 
-				user := &models.User{}
-				if err := s.DB.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
-					if gorm.IsRecordNotFoundError(err) {
-						user.LastDiscordUsername = userInfo.Username
-						user.LastDiscordDiscriminator = userInfo.Discriminator
-						if err = s.DB.Create(user).Error; err != nil {
-							s.respondError(w, "Error accessing your user info", http.StatusInternalServerError)
-							return
-						}
-					} else {
-						s.respondError(w, "Error accessing your user info", http.StatusInternalServerError)
-						return
-					}
+				user, err := s.createUser(userInfo, authToken)
+				if err != nil {
+					s.respondError(w, "There was an internal server error", 500)
+					return
 				}
 
-				fmt.Println(user.ID, user.LastDiscordUsername, user.LastDiscordDiscriminator)
+				r := &response{}
+				r.Username = user.LastDiscordUsername
+				r.Discriminator = user.LastDiscordDiscriminator
+				r.Avatar = userInfo.Avatar
+				r.Auth = authToken
+
+				s.respondJSON(w, r, http.StatusOK)
 				return
 			}
 		}

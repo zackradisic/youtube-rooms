@@ -17,3 +17,21 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	db.AutoMigrate(user, userAuth, room, video)
 	return db, nil
 }
+
+func (s *Server) createUser(userInfo *discordUserInfoResponse, authToken *AuthToken) (*models.User, error) {
+	user := &models.User{}
+	if err := s.DB.Where(&models.User{DiscordID: userInfo.ID}).First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			user.DiscordID = userInfo.ID
+			user.LastDiscordUsername = userInfo.Username
+			user.LastDiscordDiscriminator = userInfo.Discriminator
+			if err = s.DB.Create(user).Error; err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	return user, nil
+}
