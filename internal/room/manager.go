@@ -2,6 +2,7 @@ package room
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	"github.com/zackradisic/youtube-rooms/internal/models"
@@ -11,6 +12,7 @@ import (
 type Manager struct {
 	rooms map[string]*Room
 	DB    *gorm.DB
+	mux   sync.Mutex
 }
 
 // NewManager returns a new manager
@@ -23,7 +25,8 @@ func NewManager(db *gorm.DB) *Manager {
 
 // GetRoom returns a room specified by the given name and caches it
 func (m *Manager) GetRoom(name string) (*Room, error) {
-
+	m.mux.Lock()
+	defer m.mux.Unlock()
 	// First check the internal cache to see if the room exists
 	if room, ok := m.rooms[name]; ok {
 		return room, nil
@@ -37,20 +40,21 @@ func (m *Manager) GetRoom(name string) (*Room, error) {
 		return nil, fmt.Errorf("could not find that room (%s)", name)
 	}
 
+	// Cache it
 	newRoom := NewRoom(room)
 	m.rooms[room.Name] = newRoom
 
 	return newRoom, nil
 }
 
-// AddUser adds a user to a room, if the user is already in the room it does
+// RemoveUser removes a user from the room it is in, if the user is not in a room it does
 // nothing
-func (m *Manager) AddUser(room *Room, user *User) {
-	room.AddUser(user)
-}
-
-// RemoveUser removes a user from a room, if the user is not in the room it does
-// nothing
-func (m *Manager) RemoveUser(room *Room, user *User) {
-	room.RemoveUser(user)
+func (m *Manager) RemoveUser(user *User) {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+	for _, room := range m.rooms {
+		if room.Model.Name == user.CurrentRoom.Model.Name {
+			room.RemoveUser(user)
+		}
+	}
 }
