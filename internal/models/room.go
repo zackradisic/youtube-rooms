@@ -7,6 +7,6 @@ type Room struct {
 	gorm.Model
 	Owner          User   `gorm:"foreignkey:OwnerID"`
 	OwnerID        uint   `gorm:"UNIQUE_INDEX;NOT_NULL"`
-	HashedPassword string `gorm:"type:CHAR(76)"`
+	HashedPassword string `gorm:"type:CHAR(100)"`
 	Name           string `gorm:"type:VARCHAR(36);UNIQUE_INDEX;NOT_NULL"`
 }

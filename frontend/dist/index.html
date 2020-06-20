@@ -18,8 +18,12 @@
   window.onload = () => {
     
     if (window["WebSocket"]) {
-      const con = new WebSocket('ws://localhost:3000/ws')
+      const con = new WebSocket('ws://localhost:3000/ws?roomName=zack%27s%20room&roomPassword=test123')
 
+      con.onopen = () => {
+        console.log('WebSocket connection opened')
+      }
+      
       con.onmessage = evt => {
         console.log(evt.data)
       }

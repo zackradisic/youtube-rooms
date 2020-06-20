@@ -69,7 +69,6 @@ func (s *Server) handleWS() http.HandlerFunc {
 
 		rm, err := s.RoomManager.GetRoom(roomName[0])
 		if err != nil {
-			fmt.Println("BUNGO")
 			s.respondError(w, err.Error(), http.StatusBadRequest)
 			return
 		}

@@ -6,11 +6,14 @@ package ws
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/zackradisic/youtube-rooms/internal/room"
 )
 
 const (
@@ -47,7 +50,7 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	room string
+	user *room.User
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -72,7 +75,15 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		msg := &ClientMessage{}
+		if err := json.Unmarshal(message, msg); err != nil {
+			// Do something about the error
+			fmt.Println(err)
+			fmt.Println("Invalid data sent")
+		} else {
+			msg.Client = c
+			c.hub.inbound <- msg
+		}
 	}
 }
 
@@ -123,7 +134,7 @@ func (c *Client) writePump() {
 }
 
 // Serve handles websocket requests from the peer.
-func Serve(roomName string, hub *Hub, w http.ResponseWriter, r *http.Request) {
+func Serve(user *room.User, hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	// This is unsafe, remove this after development
 	upgrader.CheckOrigin = func(r *http.Request) bool {
@@ -138,7 +149,7 @@ func Serve(roomName string, hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), room: roomName}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), user: user}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
