@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/matthewhartstonge/argon2"
+
 	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
 	"github.com/zackradisic/youtube-rooms/internal/room"
@@ -23,20 +25,19 @@ type Server struct {
 	DB           *gorm.DB
 	Hub          *ws.Hub
 	RoomManager  *room.Manager
+	argon2       *argon2.Config
 }
 
 // NewServer creates a server
 func NewServer() *Server {
+	a := argon2.DefaultConfig()
 	s := &Server{
 		router:       mux.NewRouter().StrictSlash(true),
 		sessionStore: sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET"))),
-		Hub:          ws.NewHub(),
+		argon2:       &a,
 	}
-
 	s.setupRoutes()
 	s.setupAuth()
-
-	go s.Hub.Run()
 
 	db, err := s.setupDB()
 	if err != nil {
@@ -45,6 +46,8 @@ func NewServer() *Server {
 
 	s.DB = db
 	s.RoomManager = room.NewManager(db)
+	s.Hub = ws.NewHub(s.RoomManager)
+	go s.Hub.Run()
 
 	return s
 }

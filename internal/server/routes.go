@@ -2,13 +2,16 @@ package server
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
+	"github.com/matthewhartstonge/argon2"
 
+	"github.com/zackradisic/youtube-rooms/internal/models"
+	"github.com/zackradisic/youtube-rooms/internal/room"
 	"github.com/zackradisic/youtube-rooms/internal/ws"
 )
 
@@ -17,8 +20,8 @@ func (s *Server) setupRoutes() {
 	s.addRoute(apiRouter, "GET", "/auth/discord/", s.handleBeginAuth())
 	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.handleCompleteAuth())
 
-	s.addRoute(s.router, "GET", "/ws", s.handleWS())
-
+	s.addRoute(s.router, "GET", "/ws", s.checkAuthentication(s.handleWS()))
+	s.addRoute(apiRouter, "GET", "/test", s.testRoute())
 	s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())
 }
 
@@ -26,31 +29,87 @@ func (s *Server) addRoute(router *mux.Router, method string, path string, handle
 	router.HandleFunc(path, handler).Methods(method)
 }
 
-func (s *Server) handleWS() http.HandlerFunc {
-	type requestBody struct {
-		roomName string
-	}
-
+func (s *Server) testRoute() http.HandlerFunc {
+	fmt.Println("okaaay")
 	return func(w http.ResponseWriter, r *http.Request) {
-		decoder := json.NewDecoder(r.Body)
-		rBody := &requestBody{}
+		encoded, err := s.argon2.HashEncoded([]byte("test123"))
+		if err != nil {
+			fmt.Println(err)
+		}
+		rm := &models.Room{
+			OwnerID:        1,
+			HashedPassword: string(encoded),
+			Name:           "zack's room",
+		}
+		if err := s.DB.Create(rm).Error; err != nil {
+			fmt.Println(err)
+		}
+	}
+}
 
-		if err := decoder.Decode(rBody); err != nil {
-			s.respondError(w, "Invalid request body", http.StatusBadRequest)
+func (s *Server) handleWS() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := r.URL.Query()
+		roomName, ok := params["roomName"]
+		if !ok {
+			s.respondError(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		if rBody.roomName != "" {
+		roomPassword, ok := params["roomPassword"]
+		if !ok {
+			s.respondError(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		if roomName[0] == "" {
 			s.respondError(w, "Invalid room name", http.StatusBadRequest)
 			return
 		}
 
-		ws.Serve(rBody.roomName, s.Hub, w, r)
+		rm, err := s.RoomManager.GetRoom(roomName[0])
+		if err != nil {
+			fmt.Println("BUNGO")
+			s.respondError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if rm.Model.HashedPassword != "" {
+			if roomPassword[0] == "" {
+				s.respondError(w, "Invalid room password", 403)
+				return
+			}
+
+			ok, err := argon2.VerifyEncoded([]byte(roomPassword[0]), []byte(rm.Model.HashedPassword))
+			if err != nil {
+				s.respondError(w, "Internal server error", 500)
+				return
+			}
+
+			if !ok {
+				s.respondJSON(w, "Invalid room password", 403)
+				return
+			}
+		}
+
+		ctx := r.Context()
+		if u, ok := ctx.Value(userKey).(*models.User); ok {
+			if ua, ok := ctx.Value(userAuthKey).(*models.UserAuth); ok {
+				user := room.NewUser(u, ua)
+				rm.AddUser(user)
+				ws.Serve(user, s.Hub, w, r)
+				return
+			}
+		}
+
+		s.respondError(w, "Internal server error", 500)
+		return
 	}
 }
 
 func (s *Server) handleCompleteAuth() http.HandlerFunc {
 	type response struct {
+		ID            string     `json:"id"`
 		Username      string     `json:"username"`
 		Discriminator string     `json:"discriminator"`
 		Avatar        string     `json:"avatar"`
@@ -106,13 +165,18 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 					return
 				}
 
-				r := &response{}
-				r.Username = user.LastDiscordUsername
-				r.Discriminator = user.LastDiscordDiscriminator
-				r.Avatar = userInfo.Avatar
-				r.Auth = authToken
+				re := &response{}
+				re.ID = user.DiscordID
+				re.Username = user.LastDiscordUsername
+				re.Discriminator = user.LastDiscordDiscriminator
+				re.Avatar = userInfo.Avatar
+				re.Auth = authToken
 
-				s.respondJSON(w, r, http.StatusOK)
+				session.Values["discord_id"] = re.ID
+				session.Values["access_token"] = authToken.AccessToken
+				session.Save(r, w)
+
+				s.respondJSON(w, re, http.StatusOK)
 				return
 			}
 		}

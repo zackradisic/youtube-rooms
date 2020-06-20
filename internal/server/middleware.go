@@ -2,72 +2,71 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
+
+	"github.com/zackradisic/youtube-rooms/internal/models"
 )
 
 type contextKey string
 
-const discordIDKey contextKey = "discord_id"
-const accessTokenKey contextKey = "access_token"
+const userKey contextKey = "user"
+const userAuthKey contextKey = "userAuth"
 
 func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
-	type requestBody struct {
-		DiscordID string `json:"discordID"`
-	}
-	type sqlResult struct {
-		DiscordID   string
-		AccessToken string
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		var discordIDKey contextKey = "discord_id"
-		var accessTokenKey contextKey = "access_token"
-
-		decoder := json.NewDecoder(r.Body)
-		rBody := &requestBody{}
-
-		if err := decoder.Decode(rBody); err != nil {
-			s.respondError(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		if rBody.DiscordID == "" {
-			s.respondError(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		if r.Header.Get("Authorization") == "" {
-			s.respondError(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		if !strings.Contains(r.Header.Get("Authorization"), "Bearer ") {
-			s.respondError(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		accessToken := strings.Replace(r.Header.Get("Authorization"), "Bearer ", "", -1)
-		result := &sqlResult{}
-		query := "SELECT u.discord_id, ua.access_token FROM users u, user_auth ua WHERE ua.access_token=? AND u.discord_id=?"
-		fmt.Println(accessToken, rBody.DiscordID)
-		rows, err := s.DB.Raw(query, accessToken, rBody.DiscordID).Rows()
+		session, err := s.sessionStore.Get(r, "session")
 		if err != nil {
-			s.respondError(w, "There was an error authorizing your request", 500)
+			s.respondError(w, err.Error(), 403)
 			return
 		}
 
-		if !rows.Next() {
-			fmt.Println("test")
-			s.respondError(w, "There was an error authorizing your request", 500)
+		ctx := r.Context()
+
+		id, ok := session.Values["discord_id"]
+		fmt.Println(session.Values)
+		if !ok {
+			s.respondError(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		idString, ok := id.(string)
+		if !ok {
+			s.respondError(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
-		rows.Scan(&result.DiscordID, &result.AccessToken)
-		ctx = context.WithValue(ctx, discordIDKey, result.DiscordID)
-		ctx = context.WithValue(ctx, accessTokenKey, result.AccessToken)
+		accessTokenRaw, ok := session.Values["access_token"]
+		if !ok {
+			s.respondError(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		accessToken, ok := accessTokenRaw.(string)
+		if !ok {
+			s.respondError(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		user := &models.User{
+			DiscordID: idString,
+		}
+		userAuth := &models.UserAuth{
+			AccessToken: accessToken,
+		}
+
+		if err := s.DB.First(user).Error; err != nil {
+			s.respondError(w, "Could not find that user", 404)
+			return
+		}
+		userAuth.UserID = user.ID
+		if err := s.DB.First(userAuth).Error; err != nil {
+			s.respondError(w, "Invalid credentials", 401)
+			return
+		}
+
+		ctx = context.WithValue(ctx, userKey, user)
+		ctx = context.WithValue(ctx, userAuthKey, userAuth)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
