@@ -44,18 +44,27 @@ func NewActionInvoker() *ActionInvoker {
 }
 
 func selectVideo(data interface{}, client *Client) (*HubMessage, error) {
+	type jsonVideo struct {
+		URL       string `json:"url"`
+		Requester string `json:"requester"`
+	}
+
 	type jsonData struct {
-		Action string `json:"action"`
-		Data   string `json:"data"`
+		Action string     `json:"action"`
+		Data   *jsonVideo `json:"data"`
 	}
 	url, ok := data.(string)
 	if !ok {
 		return nil, fmt.Errorf("Invalid data supplied")
 	}
 
+	jv := &jsonVideo{
+		URL:       url,
+		Requester: client.user.Model.LastDiscordUsername,
+	}
 	jd := &jsonData{
 		Action: "set-video",
-		Data:   url,
+		Data:   jv,
 	}
 	j, err := json.Marshal(jd)
 	if err != nil {

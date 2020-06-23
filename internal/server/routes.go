@@ -22,6 +22,8 @@ func (s *Server) setupRoutes() {
 
 	s.addRoute(s.router, "GET", "/ws", s.checkAuthentication(s.handleWS()))
 	s.addRoute(apiRouter, "GET", "/test", s.testRoute())
+
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/build/static"))))
 	s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())
 }
 
@@ -30,7 +32,6 @@ func (s *Server) addRoute(router *mux.Router, method string, path string, handle
 }
 
 func (s *Server) testRoute() http.HandlerFunc {
-	fmt.Println("okaaay")
 	return func(w http.ResponseWriter, r *http.Request) {
 		encoded, err := s.argon2.HashEncoded([]byte("test123"))
 		if err != nil {
@@ -207,6 +208,8 @@ func (s *Server) handleBeginAuth() http.HandlerFunc {
 
 func (s *Server) handleNonAPIRoute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./frontend/dist/index.html")
+		file := r.URL.Path
+		fmt.Println("./frontend/build" + file)
+		http.ServeFile(w, r, "./frontend/build"+file)
 	}
 }
