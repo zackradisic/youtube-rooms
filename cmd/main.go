@@ -13,5 +13,5 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	s := server.NewServer()
-	s.Run(":3000")
+	s.Run(":80")
 }
