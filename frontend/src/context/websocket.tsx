@@ -23,13 +23,13 @@ const WebSocketProvider = (props: any) => {
   const dispatch = useDispatch()
 
   if (window.WebSocket) {
-    const con = new WebSocket('ws://localhost:3000/ws?roomName=zack%27s%20room&roomPassword=test123')
+    const con = new WebSocket('ws://localhost:80/ws?roomName=zack%27s%20room&roomPassword=test123')
     wsManager = { ws: con }
 
     con.onopen = () => {
       console.log('WebSocket connection opened')
       const sample = JSON.stringify({ action: 'select-video', data: 'https://www.youtube.com/watch?v=dkrKp4nEe4w&t=22s' })
-      setTimeout(() => con.send(sample), 3000)
+      setTimeout(() => con.send(sample), 10000)
     }
 
     con.onmessage = e => {
@@ -41,6 +41,7 @@ const WebSocketProvider = (props: any) => {
             title: 'test',
             requester: payload.data.requester
           }
+          console.log(payload)
           dispatch(setCurrent(vid))
           break
         }
