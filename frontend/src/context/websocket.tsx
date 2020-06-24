@@ -28,11 +28,7 @@ const WebSocketProvider = (props: any) => {
 
     con.onopen = () => {
       console.log('WebSocket connection opened')
-<<<<<<< HEAD
       const sample = JSON.stringify({ action: 'select-video', data: 'https://www.youtube.com/watch?v=dkrKp4nEe4w&t=22s' })
-=======
-      const sample = JSON.stringify({ action: 'select-video', data: 'https://www.youtube.com/watch?v=rWBSMsLG8po' })
->>>>>>> 91fdae3d3a99636e03aff907780afff0e78330cc
       setTimeout(() => con.send(sample), 3000)
     }
 
