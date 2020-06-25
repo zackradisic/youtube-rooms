@@ -45,6 +45,9 @@ const WebSocketProvider = (props: any) => {
           dispatch(setCurrent(vid))
           break
         }
+        case 'set-video-playing': {
+          dispatch(setPlaying(payload.data))
+        }
       }
     }
 

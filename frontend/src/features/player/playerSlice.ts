@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Video } from '../../api/youtube-rooms-API'
 
-interface PlayerDetails {
+export interface PlayerDetails {
     isPlaying: boolean,
     current: Video
 }

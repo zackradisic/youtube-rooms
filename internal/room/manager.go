@@ -50,8 +50,8 @@ func (m *Manager) GetRoom(name string) (*Room, error) {
 // RemoveUser removes a user from the room it is in, if the user is not in a room it does
 // nothing
 func (m *Manager) RemoveUser(user *User) {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	// m.mux.Lock()
+	// defer m.mux.Unlock()
 	for _, room := range m.rooms {
 		if room.Model.Name == user.CurrentRoom.Model.Name {
 			room.RemoveUser(user)

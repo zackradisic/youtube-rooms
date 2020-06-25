@@ -61,20 +61,21 @@ func (s *Server) createUser(userInfo *discordUserInfoResponse, authToken *AuthTo
 	}
 
 	auth.UserID = user.ID
-	if err := s.DB.Model(auth).Update(auth).Error; err != nil {
+	if err := tx.Model(&models.UserAuth{}).Where("user_id = ?", auth.UserID).Update(auth).Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	if err := s.DB.Model(user).Update("last_discord_username", userInfo.Username).Error; err != nil {
+	if err := tx.Model(user).Update("last_discord_username", userInfo.Username).Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	if err := s.DB.Model(user).Update("last_discord_discriminator", userInfo.Discriminator).Error; err != nil {
+	if err := tx.Model(user).Update("last_discord_discriminator", userInfo.Discriminator).Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
+	tx.Commit()
 	return user, nil
 }

@@ -24,8 +24,8 @@ func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 		ctx := r.Context()
 
 		id, ok := session.Values["discord_id"]
-		fmt.Println(session.Values)
 		if !ok {
+			fmt.Println("handleWS() -> Couldn't find discord id in session cookie")
 			s.respondError(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -37,6 +37,7 @@ func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 
 		accessTokenRaw, ok := session.Values["access_token"]
 		if !ok {
+			fmt.Println("handleWS() -> Couldn't find access_token in session cookie")
 			s.respondError(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -47,19 +48,17 @@ func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		user := &models.User{
-			DiscordID: idString,
-		}
-		userAuth := &models.UserAuth{
-			AccessToken: accessToken,
-		}
+		fmt.Printf("Trying to authenticate: (%s)", idString)
+		user := &models.User{}
 
-		if err := s.DB.First(user).Error; err != nil {
+		userAuth := &models.UserAuth{}
+
+		if err := s.DB.Where("discord_id = ?", idString).Find(user).Error; err != nil {
 			s.respondError(w, "Could not find that user", 404)
 			return
 		}
-		userAuth.UserID = user.ID
-		if err := s.DB.First(userAuth).Error; err != nil {
+
+		if err := s.DB.Where("access_token = ? AND user_id = ?", accessToken, user.ID).Find(userAuth).Error; err != nil {
 			s.respondError(w, "Invalid credentials", 401)
 			return
 		}

@@ -59,17 +59,20 @@ func (s *Server) handleWS() http.HandlerFunc {
 
 		roomPassword, ok := params["roomPassword"]
 		if !ok {
+			fmt.Println("handleWS() -> Bad request")
 			s.respondError(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		if roomName[0] == "" {
+			fmt.Println("handleWS() -> Invalid room name")
 			s.respondError(w, "Invalid room name", http.StatusBadRequest)
 			return
 		}
 
 		rm, err := s.RoomManager.GetRoom(roomName[0])
 		if err != nil {
+			fmt.Println("handleWS() -> Couldn't find room")
 			s.respondError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -96,7 +99,11 @@ func (s *Server) handleWS() http.HandlerFunc {
 		if u, ok := ctx.Value(userKey).(*models.User); ok {
 			if ua, ok := ctx.Value(userAuthKey).(*models.UserAuth); ok {
 				user := room.NewUser(u, ua)
-				rm.AddUser(user)
+				if err := rm.AddUser(user); err != nil {
+					fmt.Println("handleWS() -> Already in room")
+					s.respondError(w, "Already in the room", http.StatusBadRequest)
+					return
+				}
 				ws.Serve(user, s.Hub, w, r)
 				return
 			}
@@ -149,6 +156,7 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 				authToken, err := s.getAuthorizationCode(code)
 
 				if err != nil {
+					fmt.Println(err)
 					s.respondError(w, "Invalid credentials provided", 403)
 					return
 				}

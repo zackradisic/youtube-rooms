@@ -1,6 +1,7 @@
 package room
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/zackradisic/youtube-rooms/internal/models"
@@ -9,7 +10,7 @@ import (
 // Room manages a YouTube room
 type Room struct {
 	Model     *models.Room
-	Mux       sync.Mutex
+	mux       sync.Mutex
 	Users     []*User
 	Current   *Video
 	IsPlaying bool
@@ -25,34 +26,35 @@ func NewRoom(model *models.Room) *Room {
 
 // SetIsPlaying sets whether or not the room is playing the video
 func (r *Room) SetIsPlaying(isPlaying bool) {
-	r.Mux.Lock()
-	defer r.Mux.Unlock()
+	r.mux.Lock()
+	defer r.mux.Unlock()
 	r.IsPlaying = isPlaying
 }
 
 // SetCurrentVideo sets this room's current video
 func (r *Room) SetCurrentVideo(video *Video) {
-	r.Mux.Lock()
-	defer r.Mux.Unlock()
+	r.mux.Lock()
+	defer r.mux.Unlock()
 	r.Current = video
 }
 
 // AddUser adds a user to the room
-func (r *Room) AddUser(user *User) {
-	r.Mux.Lock()
-	defer r.Mux.Unlock()
+func (r *Room) AddUser(user *User) error {
+	r.mux.Lock()
+	defer r.mux.Unlock()
 	i := r.getUserIndex(user)
 	if i != -1 {
-		return
+		return fmt.Errorf("already in the room")
 	}
 	r.Users = append(r.Users, user)
 	user.CurrentRoom = r
+	return nil
 }
 
 // RemoveUser removes a user from the rooms
 func (r *Room) RemoveUser(user *User) {
-	r.Mux.Lock()
-	defer r.Mux.Unlock()
+	r.mux.Lock()
+	defer r.mux.Unlock()
 	i := r.getUserIndex(user)
 	if i == -1 {
 		return
@@ -63,8 +65,8 @@ func (r *Room) RemoveUser(user *User) {
 
 // HasUser returns true if the user is in this room, false if not
 func (r *Room) HasUser(user *User) bool {
-	r.Mux.Lock()
-	defer r.Mux.Unlock()
+	r.mux.Lock()
+	defer r.mux.Unlock()
 	for _, u := range r.Users {
 		if u.Model.DiscordID == user.Model.DiscordID {
 			return true
@@ -76,7 +78,7 @@ func (r *Room) HasUser(user *User) bool {
 
 func (r *Room) getUserIndex(user *User) int {
 	for i, u := range r.Users {
-		if u.User.DiscordID == user.User.DiscordID {
+		if u.Model.DiscordID == user.Model.DiscordID {
 			return i
 		}
 	}

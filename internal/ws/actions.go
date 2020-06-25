@@ -40,7 +40,33 @@ func NewActionInvoker() *ActionInvoker {
 	}
 
 	a.registerAction("select-video", selectVideo)
+	a.registerAction("set-video-playing", setVideoPlaying)
 	return a
+}
+
+func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
+	type jsonResponse struct {
+		Action    string `json:"action"`
+		IsPlaying bool   `json:"data"`
+	}
+
+	isPlaying, ok := data.(bool)
+	if !ok {
+		return nil, fmt.Errorf("Invalid data supplied")
+	}
+
+	jr := &jsonResponse{
+		Action:    "set-video-playing",
+		IsPlaying: isPlaying,
+	}
+
+	r, err := json.Marshal(jr)
+	if err != nil {
+		return nil, err
+	}
+
+	client.user.CurrentRoom.IsPlaying = true
+	return NewHubMessage(r, client.user.CurrentRoom), nil
 }
 
 func selectVideo(data interface{}, client *Client) (*HubMessage, error) {
