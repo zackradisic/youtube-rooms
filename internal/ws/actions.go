@@ -22,7 +22,6 @@ func (a *ActionInvoker) InvokeAction(message *ClientMessage, outbound chan *HubM
 			fmt.Println(err)
 			return err
 		}
-		fmt.Println(res)
 		go func() { outbound <- res }()
 		return nil
 	}
@@ -41,6 +40,7 @@ func NewActionInvoker() *ActionInvoker {
 
 	a.registerAction("select-video", selectVideo)
 	a.registerAction("set-video-playing", setVideoPlaying)
+	a.registerAction("seek-to", seekTo)
 	return a
 }
 
@@ -101,3 +101,42 @@ func selectVideo(data interface{}, client *Client) (*HubMessage, error) {
 	client.user.CurrentRoom.SetCurrentVideo(video)
 	return NewHubMessage(j, client.user.CurrentRoom), nil
 }
+
+func seekTo(data interface{}, client *Client) (*HubMessage, error) {
+	type jsonResponse struct {
+		Action string `json:"action"`
+		Data   int    `json:"data"`
+	}
+
+	secondsFloat, ok := data.(float64)
+	if !ok {
+		return nil, fmt.Errorf("Invalid data: Expected float64")
+	}
+
+	seconds := int(secondsFloat)
+
+	jr := &jsonResponse{
+		Action: "seek-to",
+		Data:   seconds,
+	}
+
+	j, err := json.Marshal(jr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewHubMessage(j, client.user.CurrentRoom), nil
+}
+
+// Maybe there is something we can do to make this code more DRY?
+//
+// 		1) Have the action functions return the JSON data as []byte
+//		2) A surrounding function creates the HubMessage
+//
+// This makes the action function solely responsible for validating the input
+// and marshalling the data into JSON form.
+//
+// I don't like how the JSON response structs are defined each time in the body of
+// the action functions, though I am uncertain of the best way to resolve this problem.
+//
