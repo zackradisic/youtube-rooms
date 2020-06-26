@@ -23,7 +23,7 @@ const WebSocketProvider = (props: any) => {
   const dispatch = useDispatch()
 
   if (window.WebSocket) {
-    const con = new WebSocket('ws://localhost:80/ws?roomName=zack%27s%20room&roomPassword=test123')
+    const con = new WebSocket('ws://localhost/ws?roomName=zack%27s%20room&roomPassword=test123')
     wsManager = { ws: con }
 
     con.onopen = () => {
