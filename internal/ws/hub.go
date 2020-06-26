@@ -62,7 +62,7 @@ func (h *Hub) Run() {
 				h.removeClient(client)
 			}
 		case message := <-h.inbound:
-			fmt.Println("Received message from client")
+			fmt.Printf("Received message from client: (%s)\n", message.Client.user.DiscordHandle())
 			err := h.actionInvoker.InvokeAction(message, h.outbound)
 			if err != nil {
 				fmt.Println(err)
