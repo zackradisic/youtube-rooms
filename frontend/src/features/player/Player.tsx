@@ -69,20 +69,26 @@ const Player = () => {
     playerState.isPlaying ? player.playVideo() : player.pauseVideo()
   })
 
-  const handleClick = () => {
-    (ws.ws as WebSocket).send(JSON.stringify({
-      action: 'set-video-playing',
-      data: !playerState.isPlaying
-    }))
-  }
   return (
     <>
       <h1>{playerState.current.title}</h1>
       <VideoInput url={playerState.current.url} ws={ws.ws}></VideoInput>
       <div id="player"></div>
-      <button onClick={handleClick}>toggle play</button>
+      <TogglePlay isPlaying={playerState.isPlaying} ws={ws.ws}/>
     </>
   )
+}
+
+const TogglePlay = ({ isPlaying, ws }: { isPlaying: boolean, ws?: WebSocket }) => {
+  const handleClick = () => {
+    if (!ws) return
+    (ws as WebSocket).send(JSON.stringify({
+      action: 'set-video-playing',
+      data: !isPlaying
+    }))
+  }
+
+  return <button onClick={handleClick}>{isPlaying ? 'Pause' : 'Play'}</button>
 }
 
 const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
