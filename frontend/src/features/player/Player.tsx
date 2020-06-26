@@ -4,13 +4,18 @@ import YoutubePlayer from 'youtube-player'
 import { RootState } from '../../app/rootReducer'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { setPlaying, setCurrent } from './playerSlice'
+import { setPlaying, setCurrent, seekTo } from './playerSlice'
 import { extractYoutubeID } from '../../util'
 
 import { WebSocketContext } from '../../context/websocket'
 
 interface PlayerInfo {
   id: string,
+}
+
+interface VideoSeekInput {
+  minutes: number,
+  seconds: number
 }
 
 const Player = () => {
@@ -53,7 +58,6 @@ const Player = () => {
             }))
         }
       })
-
       return
     }
 
@@ -66,6 +70,12 @@ const Player = () => {
       setPlayerInfo({ ...playerInfo, id: id })
     }
 
+    if (playerState.seekTo !== -1) {
+      console.log('Player.tsx -> ' + playerState.seekTo)
+      player.seekTo(playerState.seekTo, true)
+      dispatch(seekTo(-1))
+    }
+
     playerState.isPlaying ? player.playVideo() : player.pauseVideo()
   })
 
@@ -74,7 +84,11 @@ const Player = () => {
       <h1>{playerState.current.title}</h1>
       <VideoInput url={playerState.current.url} ws={ws.ws}></VideoInput>
       <div id="player"></div>
-      <TogglePlay isPlaying={playerState.isPlaying} ws={ws.ws}/>
+
+      <div className="controls">
+        <TogglePlay isPlaying={playerState.isPlaying} ws={ws.ws}/>
+        <SeekControls player={player} ws={ws.ws}/>
+      </div>
     </>
   )
 }
@@ -89,6 +103,32 @@ const TogglePlay = ({ isPlaying, ws }: { isPlaying: boolean, ws?: WebSocket }) =
   }
 
   return <button onClick={handleClick}>{isPlaying ? 'Pause' : 'Play'}</button>
+}
+
+const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
+  const [time, setTime] = useState({ minutes: 0, seconds: 0 } as VideoSeekInput)
+  const offset = 2
+
+  const seekTo = (time: number) => {
+    if (!ws) return
+    (ws as WebSocket).send(JSON.stringify({
+      action: 'seek-to',
+      data: Math.floor(time)
+    }))
+  }
+
+  const seekMinSec = (minutes: number, seconds: number) => seekTo((60 * minutes) + seconds)
+  const seekOffset = async (offset: number) => { seekTo(await player.getCurrentTime() + offset) }
+
+  const handleChange = (e: any) => {
+    console.log(e.target.value)
+  }
+  return (
+    <>
+      <h1><a onClick={() => seekOffset(offset * -1)}>👈</a> <a onClick={() => seekOffset(offset)}>👉</a></h1>
+      <input type="text" onSubmit={(e: any) => console.log(e)} onChange={handleChange} value={`${time.minutes}:${time.seconds}`} placeholder="Enter a time..." />
+    </>
+  )
 }
 
 const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
