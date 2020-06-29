@@ -8,6 +8,7 @@ import { setPlaying, setCurrent, seekTo } from './playerSlice'
 import { extractYoutubeID } from '../../util'
 
 import { WebSocketContext } from '../../websocket/context'
+import { Action, sendClientAction } from '../../websocket/websocket'
 
 interface PlayerInfo {
   id: string,
@@ -45,17 +46,17 @@ const Player = () => {
       player.on('stateChange', (e: any) => {
         switch (e.data) {
           case 1:
-            (ws.ws as WebSocket).send(JSON.stringify({
-              action: 'set-video-playing',
+            sendClientAction({
+              action: Action.SetVideoPlaying,
               data: true
-            }))
+            }, ws.ws as WebSocket)
             return
 
           case 2:
-            (ws.ws as WebSocket).send(JSON.stringify({
-              action: 'set-video-playing',
+            sendClientAction({
+              action: Action.SetVideoPlaying,
               data: false
-            }))
+            }, ws.ws as WebSocket)
         }
       })
       return
@@ -96,10 +97,10 @@ const Player = () => {
 const TogglePlay = ({ isPlaying, ws }: { isPlaying: boolean, ws?: WebSocket }) => {
   const handleClick = () => {
     if (!ws) return
-    (ws as WebSocket).send(JSON.stringify({
-      action: 'set-video-playing',
+    sendClientAction({
+      action: Action.SetVideoPlaying,
       data: !isPlaying
-    }))
+    }, ws)
   }
 
   return <button onClick={handleClick}>{isPlaying ? 'Pause' : 'Play'}</button>
@@ -111,10 +112,10 @@ const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
 
   const seekTo = (time: number) => {
     if (!ws) return
-    (ws as WebSocket).send(JSON.stringify({
-      action: 'seek-to',
+    sendClientAction({
+      action: Action.SeekTo,
       data: Math.floor(time)
-    }))
+    }, ws)
   }
 
   const seekMinSec = (minutes: number, seconds: number) => seekTo((60 * minutes) + seconds)
@@ -146,12 +147,12 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
     if (!extractYoutubeID(url)) return
     if (!ws) return
 
-    console.log('Valid URL detected, sending to Websocket.');
+    console.log('Valid URL detected, sending to Websocket.')
 
-    (ws as WebSocket).send(JSON.stringify({
-      action: 'select-video',
+    sendClientAction({
+      action: Action.SetVideo,
       data: url
-    }))
+    }, ws)
   }
 
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {

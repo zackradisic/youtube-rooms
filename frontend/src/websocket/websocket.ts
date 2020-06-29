@@ -1,30 +1,50 @@
 import { Dispatch } from '@reduxjs/toolkit'
 import { setCurrent, setPlaying, seekTo } from '../features/player/playerSlice'
 
-enum Action {
+export enum Action {
     SetVideo = 'set-video',
     SetVideoPlaying = 'set-video-playing',
     SeekTo = 'seek-to'
 }
 
-interface Payload {
+interface WebsocketPayload {
     action: Action,
     data: any
 }
 
-interface SetVideoPayload extends Payload {
+interface SetVideoPayload extends WebsocketPayload {
     action: Action.SetVideo,
     data: { url: string, requester: string }
 }
 
-interface SetVideoPlayingPayload extends Payload {
+interface SetVideoPlayingPayload extends WebsocketPayload {
     action: Action.SetVideoPlaying,
     data: boolean
 }
 
-interface SeekToPayload extends Payload {
+interface SeekToPayload extends WebsocketPayload {
     action: Action.SeekTo,
     data: number
+}
+
+interface ClientPayload {
+  action: Action,
+  data: any
+}
+
+interface ClientSetVideoPayload extends ClientPayload {
+  action: Action.SetVideo,
+  data: string
+}
+
+interface ClientSetVideoPlayingPayload extends ClientPayload {
+  action: Action.SetVideoPlaying,
+  data: boolean
+}
+
+interface ClientSeekToPayload extends ClientPayload {
+  action: Action.SeekTo,
+  data: number
 }
 
 export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
@@ -39,4 +59,8 @@ export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
     const payload = json as SeekToPayload
     dispatch(seekTo(payload.data as number))
   }
+}
+
+export const sendClientAction = (payload: ClientPayload, ws: WebSocket) => {
+  ws.send(JSON.stringify(payload))
 }

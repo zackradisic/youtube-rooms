@@ -2,7 +2,7 @@ import React, { createContext } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux'
 
-import { parsePayload } from './websocket'
+import { Action, parsePayload } from './websocket'
 
 export interface WSManager {
     ws?: WebSocket
@@ -28,7 +28,7 @@ const WebSocketProvider = (props: any) => {
 
     con.onopen = () => {
       console.log('WebSocket connection opened')
-      const sample = JSON.stringify({ action: 'select-video', data: 'https://www.youtube.com/watch?v=dkrKp4nEe4w&t=22s' })
+      const sample = JSON.stringify({ action: Action.SetVideo, data: 'https://www.youtube.com/watch?v=dkrKp4nEe4w&t=22s' })
       setTimeout(() => con.send(sample), 10000)
     }
 
