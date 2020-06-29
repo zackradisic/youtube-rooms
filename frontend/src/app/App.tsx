@@ -2,7 +2,7 @@ import React from 'react'
 import logo from './logo.svg'
 import './App.css'
 
-import WebSocketProvider, { WebSocketContext } from '../context/websocket'
+import WebSocketProvider, { WebSocketContext } from '../websocket/context'
 import Player from '../features/player/Player'
 
 const App = () => {

@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setPlaying, setCurrent, seekTo } from './playerSlice'
 import { extractYoutubeID } from '../../util'
 
-import { WebSocketContext } from '../../context/websocket'
+import { WebSocketContext } from '../../websocket/context'
 
 interface PlayerInfo {
   id: string,

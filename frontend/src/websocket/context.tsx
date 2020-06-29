@@ -2,7 +2,7 @@ import React, { createContext } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux'
 
-import { setPlaying, setCurrent, seekTo } from '../features/player/playerSlice'
+import { parsePayload } from './websocket'
 
 export interface WSManager {
     ws?: WebSocket
@@ -34,26 +34,7 @@ const WebSocketProvider = (props: any) => {
 
     con.onmessage = e => {
       const payload = JSON.parse(e.data)
-      switch (payload.action) {
-        case 'set-video': {
-          const vid = {
-            url: payload.data.url,
-            title: 'test',
-            requester: payload.data.requester
-          }
-          console.log(payload)
-          dispatch(setCurrent(vid))
-          break
-        }
-        case 'set-video-playing': {
-          dispatch(setPlaying(payload.data))
-          break
-        }
-        case 'seek-to': {
-          dispatch(seekTo(payload.data as number)) // Probably should be doing some validation here
-          break
-        }
-      }
+      parsePayload(payload, dispatch)
     }
 
     return (
