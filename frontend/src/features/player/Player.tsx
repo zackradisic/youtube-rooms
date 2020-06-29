@@ -106,7 +106,7 @@ const TogglePlay = ({ isPlaying, ws }: { isPlaying: boolean, ws?: WebSocket }) =
 }
 
 const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
-  const [time, setTime] = useState({ minutes: 0, seconds: 0 } as VideoSeekInput)
+  const [timeInput, setTimeInput] = useState('')
   const offset = 2
 
   const seekTo = (time: number) => {
@@ -121,12 +121,20 @@ const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
   const seekOffset = async (offset: number) => { seekTo(await player.getCurrentTime() + offset) }
 
   const handleChange = (e: any) => {
-    console.log(e.target.value)
+    setTimeInput(e.target.value)
+  }
+
+  const handleKeyDown = (e: any) => {
+    if (e.key !== 'Enter') return
+    const [minutes, seconds] = timeInput.split(':')
+    if (!minutes || !seconds) return
+    if (isNaN(+minutes) || isNaN(+seconds)) return
+    seekMinSec(+minutes, +seconds)
   }
   return (
     <>
       <h1><a onClick={() => seekOffset(offset * -1)}>👈</a> <a onClick={() => seekOffset(offset)}>👉</a></h1>
-      <input type="text" onSubmit={(e: any) => console.log(e)} onChange={handleChange} value={`${time.minutes}:${time.seconds}`} placeholder="Enter a time..." />
+      <input type="text" onKeyDown={handleKeyDown} onChange={handleChange} value={timeInput} placeholder="Enter a time..." />
     </>
   )
 }
