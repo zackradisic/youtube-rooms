@@ -19,6 +19,15 @@ $link: #DBF6FF;
 $link-hover: white;
 $widescreen-enabled: false;
 $fullhd-enabled: false;
+$radius: 2px;
+
+$input-background-color: #272727;
+$input-border-color: none;
+$input-hover-border-color: none;
+$input-hover-color: none;
+$input-focus-box-shadow-color: none;
+$input-focus-color: none;
+$input-focus-border-color: none;
 
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/base/_all.sass";

@@ -19,6 +19,14 @@ interface VideoSeekInput {
   seconds: number
 }
 
+const styles = {
+  title: {
+    color: '#E3E3E3',
+    fontWeight: 'normal',
+    fontSize: '28px'
+  } as React.CSSProperties
+}
+
 const Player = () => {
   const playerState = useSelector((state: RootState) => state.player)
   const ws = React.useContext(WebSocketContext)
@@ -81,8 +89,8 @@ const Player = () => {
   })
 
   return (
-    <>
-      <h1>{playerState.current.title}</h1>
+    <div className="section">
+      <h1 style={styles.title}>{playerState.current.title}</h1>
       <VideoInput url={playerState.current.url} ws={ws.ws}></VideoInput>
       <div id="player"></div>
 
@@ -90,7 +98,7 @@ const Player = () => {
         <TogglePlay isPlaying={playerState.isPlaying} ws={ws.ws}/>
         <SeekControls player={player} ws={ws.ws}/>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -163,7 +171,7 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
 
   return (
     <div>
-      <input type="text" value={val} onChange={handleChange} placeholder="Enter a valid YouTube URL..." />
+      <input className="video-input" type="text" value={val} onChange={handleChange} placeholder="Enter a valid YouTube URL..." />
     </div>
   )
 }

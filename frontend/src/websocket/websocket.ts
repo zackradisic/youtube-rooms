@@ -50,7 +50,7 @@ interface ClientSeekToPayload extends ClientPayload {
 export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
   if ((json as SetVideoPayload).action === Action.SetVideo) {
     const payload = json as SetVideoPayload
-    const video = { url: payload.data.url, requester: payload.data.requester, title: 'test' }
+    const video = { url: payload.data.url, requester: payload.data.requester, title: "Zack's room" }
     dispatch(setCurrent(video))
   } else if ((json as SetVideoPlayingPayload).action === Action.SetVideoPlaying) {
     const payload = json as SetVideoPlayingPayload
