@@ -7,45 +7,20 @@ export enum Action {
     SeekTo = 'seek-to'
 }
 
-interface WebsocketPayload {
-    action: Action,
-    data: any
+interface WebsocketPayload<T extends Action, K> {
+    action: T,
+    data: K
 }
 
-interface SetVideoPayload extends WebsocketPayload {
-    action: Action.SetVideo,
-    data: { url: string, requester: string }
-}
+interface WebsocketClientPayload<T extends Action, K> extends WebsocketPayload<T, K> {}
 
-interface SetVideoPlayingPayload extends WebsocketPayload {
-    action: Action.SetVideoPlaying,
-    data: boolean
-}
+export type SetVideoPayload = WebsocketPayload<Action.SetVideo, { url: string, requester: string }>
+export type SetVideoPlayingPayload = WebsocketPayload<Action.SetVideoPlaying, boolean>
+export type SeekToPayload = WebsocketPayload<Action.SeekTo, number>
 
-interface SeekToPayload extends WebsocketPayload {
-    action: Action.SeekTo,
-    data: number
-}
-
-interface ClientPayload {
-  action: Action,
-  data: any
-}
-
-interface ClientSetVideoPayload extends ClientPayload {
-  action: Action.SetVideo,
-  data: string
-}
-
-interface ClientSetVideoPlayingPayload extends ClientPayload {
-  action: Action.SetVideoPlaying,
-  data: boolean
-}
-
-interface ClientSeekToPayload extends ClientPayload {
-  action: Action.SeekTo,
-  data: number
-}
+export type SetVideoPayloadClient = WebsocketClientPayload<Action.SetVideo, string>
+export type SetVideoPlayingPayloadClient = WebsocketClientPayload<Action.SetVideoPlaying, boolean>
+export type SeekToPayloadClient = WebsocketClientPayload<Action.SeekTo, number>
 
 export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
   if ((json as SetVideoPayload).action === Action.SetVideo) {
@@ -61,6 +36,6 @@ export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
   }
 }
 
-export const sendClientAction = (payload: ClientPayload, ws: WebSocket) => {
+export const sendClientAction = <T extends Action, K> (payload: WebsocketClientPayload<T, K>, ws: WebSocket) => {
   ws.send(JSON.stringify(payload))
 }

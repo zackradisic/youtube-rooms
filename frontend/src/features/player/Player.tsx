@@ -8,7 +8,13 @@ import { setPlaying, setCurrent, seekTo } from './playerSlice'
 import { extractYoutubeID } from '../../util'
 
 import { WebSocketContext } from '../../websocket/context'
-import { Action, sendClientAction } from '../../websocket/websocket'
+import {
+  Action,
+  sendClientAction,
+  SetVideoPayloadClient,
+  SetVideoPlayingPayloadClient,
+  SeekToPayloadClient
+} from '../../websocket/websocket'
 
 interface PlayerInfo {
   id: string,
@@ -57,14 +63,14 @@ const Player = () => {
             sendClientAction({
               action: Action.SetVideoPlaying,
               data: true
-            }, ws.ws as WebSocket)
+            } as SetVideoPlayingPayloadClient, ws.ws as WebSocket)
             return
 
           case 2:
             sendClientAction({
               action: Action.SetVideoPlaying,
               data: false
-            }, ws.ws as WebSocket)
+            } as SetVideoPlayingPayloadClient, ws.ws as WebSocket)
         }
       })
       return
@@ -108,7 +114,7 @@ const TogglePlay = ({ isPlaying, ws }: { isPlaying: boolean, ws?: WebSocket }) =
     sendClientAction({
       action: Action.SetVideoPlaying,
       data: !isPlaying
-    }, ws)
+    } as SetVideoPlayingPayloadClient, ws)
   }
 
   return <button onClick={handleClick}>{isPlaying ? 'Pause' : 'Play'}</button>
@@ -123,7 +129,7 @@ const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
     sendClientAction({
       action: Action.SeekTo,
       data: Math.floor(time)
-    }, ws)
+    } as SeekToPayloadClient, ws)
   }
 
   const seekMinSec = (minutes: number, seconds: number) => seekTo((60 * minutes) + seconds)
@@ -160,7 +166,7 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
     sendClientAction({
       action: Action.SetVideo,
       data: url
-    }, ws)
+    } as SetVideoPayloadClient, ws)
   }
 
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {

@@ -38,7 +38,7 @@ func NewActionInvoker() *ActionInvoker {
 		actions: make(map[string]action),
 	}
 
-	a.registerAction("select-video", selectVideo)
+	a.registerAction("set-video", selectVideo)
 	a.registerAction("set-video-playing", setVideoPlaying)
 	a.registerAction("seek-to", seekTo)
 	return a
