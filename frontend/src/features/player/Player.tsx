@@ -5,6 +5,7 @@ import { RootState } from '../../app/rootReducer'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { setPlaying, setCurrent, seekTo } from './playerSlice'
+import { User } from '../../api/youtube-rooms-API'
 import { extractYoutubeID } from '../../util'
 
 import { WebSocketContext } from '../../websocket/context'
@@ -34,6 +35,7 @@ const styles = {
 }
 
 const Player = () => {
+  const users = useSelector((state: RootState) => state.usersDisplay)
   const playerState = useSelector((state: RootState) => state.player)
   const ws = React.useContext(WebSocketContext)
   const [player, setPlayer] = useState(null as any)
@@ -97,12 +99,49 @@ const Player = () => {
   return (
     <div className="section">
       <h1 style={styles.title}>{playerState.current.title}</h1>
-      <VideoInput url={playerState.current.url} ws={ws.ws}></VideoInput>
-      <div id="player"></div>
+      <div className="columns">
+        <div className="column">
+          <div className="columns is-multiline">
+            <div className="column is-6 is-12-mobile">
+              <VideoInput url={playerState.current.url} ws={ws.ws}></VideoInput>
+            </div>
 
-      <div className="controls">
-        <TogglePlay isPlaying={playerState.isPlaying} ws={ws.ws}/>
-        <SeekControls player={player} ws={ws.ws}/>
+          </div>
+
+          <div className="columns is-multiline">
+            <div className="column is-8">
+              <div style={{ width: '100%', height: '100%' }} id="player"></div>
+            </div>
+
+            <div className="column is-4">
+              <PlayerSidebar users={users}/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const PlayerSidebar = ({ users }: { users: User[]}) => {
+  return (
+    <div className="columns is-multiline" style={{ paddingLeft: '1rem' }}>
+      <div className="column is-full">
+        <h1 style={{ letterSpacing: '0.305em', fontSize: '16px', fontWeight: 600, color: '#9C9C9C' }}>VIEWERS</h1>
+      </div>
+    </div>
+  )
+}
+
+const PlayerControls = ({ player, isPlaying, ws }: { player: any, isPlaying: boolean, ws?: WebSocket }) => {
+  return (
+    <div className="columns is-multiline" style={{ paddingLeft: '1rem' }}>
+      <div className="column is-12">
+        <TogglePlay isPlaying={isPlaying} ws={ws}/>
+      </div>
+
+      <div className="column is-12">
+        <SeekControls player={player} ws={ws}/>
       </div>
     </div>
   )
@@ -177,7 +216,7 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
 
   return (
     <div>
-      <input className="video-input" type="text" value={val} onChange={handleChange} placeholder="Enter a valid YouTube URL..." />
+      <input style={{ width: '100%' }} className="video-input" type="text" value={val} onChange={handleChange} placeholder="Enter a valid YouTube URL..." />
     </div>
   )
 }
