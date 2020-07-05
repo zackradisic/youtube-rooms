@@ -24,6 +24,13 @@ func NewRoom(model *models.Room) *Room {
 	}
 }
 
+// GetUsers returns the Users currently in this room
+func (r *Room) GetUsers() []*User {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+	return r.Users
+}
+
 // SetIsPlaying sets whether or not the room is playing the video
 func (r *Room) SetIsPlaying(isPlaying bool) {
 	r.mux.Lock()

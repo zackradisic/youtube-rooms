@@ -41,7 +41,44 @@ func NewActionInvoker() *ActionInvoker {
 	a.registerAction("set-video", selectVideo)
 	a.registerAction("set-video-playing", setVideoPlaying)
 	a.registerAction("seek-to", seekTo)
+	a.registerAction("get-users", getUsers)
 	return a
+}
+
+func getUsers(data interface{}, client *Client) (*HubMessage, error) {
+	type roomUser struct {
+		DiscordID           string `json:"discordID"`
+		DiscordUsername     string `json:"discordUsername"`
+		DiscordDisriminator string `json:"discordDiscriminator"`
+	}
+
+	type jsonResponse struct {
+		Action string      `json:"action"`
+		Users  []*roomUser `json:"data"`
+	}
+
+	jr := &jsonResponse{
+		Action: "get-users",
+		Users:  make([]*roomUser, 0),
+	}
+
+	users := client.user.CurrentRoom.GetUsers()
+	for _, user := range users {
+		ru := &roomUser{
+			DiscordID:           user.Model.DiscordID,
+			DiscordUsername:     user.Model.LastDiscordUsername,
+			DiscordDisriminator: user.Model.LastDiscordUsername,
+		}
+
+		jr.Users = append(jr.Users, ru)
+	}
+
+	r, err := json.Marshal(jr)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewHubMessage(r, client.user.CurrentRoom), nil
 }
 
 func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
