@@ -30,7 +30,8 @@ const styles = {
   title: {
     color: '#E3E3E3',
     fontWeight: 'normal',
-    fontSize: '28px'
+    fontSize: '28px',
+    paddingBottom: '1rem'
   } as React.CSSProperties
 }
 
@@ -108,13 +109,13 @@ const Player = () => {
 
           </div>
 
-          <div className="columns is-multiline">
+          <div className="columns is-multiline" style={{ minHeight: '60vh' }}>
             <div className="column is-8">
               <div style={{ width: '100%', height: '100%' }} id="player"></div>
             </div>
 
             <div className="column is-4">
-              <PlayerSidebar users={users}/>
+              <PlayerSidebar users={users.users}/>
             </div>
           </div>
         </div>
@@ -124,10 +125,14 @@ const Player = () => {
 }
 
 const PlayerSidebar = ({ users }: { users: User[]}) => {
+  const u = users.map(user => <li key={`viewers-${user.discordID}`}>{`${user.discordUsername}#${user.discordDiscriminator}`}</li>)
   return (
-    <div className="columns is-multiline" style={{ paddingLeft: '1rem' }}>
+    <div className="columns is-multiline">
       <div className="column is-full">
         <h1 style={{ letterSpacing: '0.305em', fontSize: '16px', fontWeight: 600, color: '#9C9C9C' }}>VIEWERS</h1>
+        <ul className="viewer-list">
+          {u}
+        </ul>
       </div>
     </div>
   )

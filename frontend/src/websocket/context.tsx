@@ -28,8 +28,10 @@ const WebSocketProvider = (props: any) => {
 
     con.onopen = () => {
       console.log('WebSocket connection opened')
-      const sample = JSON.stringify({ action: Action.SetVideo, data: 'https://www.youtube.com/watch?v=dkrKp4nEe4w&t=22s' })
-      setTimeout(() => con.send(sample), 10000)
+      const getUsers = JSON.stringify({ action: Action.GetUsers, data: null })
+      const sample = JSON.stringify({ action: Action.SetVideo, data: 'https://www.youtube.com/watch?v=YT127qw8eQQ' })
+      con.send(getUsers)
+      setTimeout(() => con.send(sample), 3000)
     }
 
     con.onmessage = e => {
