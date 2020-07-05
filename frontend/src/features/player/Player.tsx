@@ -199,7 +199,8 @@ const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
 }
 
 const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
-  const [val, setVal] = useState(url)
+  const [val, setVal] = useState('')
+  const [placeholder, setPlaceholder] = useState(url)
 
   const sendIfValid = (url: string) => {
     if (!extractYoutubeID(url)) return
@@ -213,6 +214,10 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
     } as SetVideoPayloadClient, ws)
   }
 
+  useEffect(() => {
+    if (url) setPlaceholder(url)
+  })
+
   const handleChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault()
     setVal(e.currentTarget.value)
@@ -221,7 +226,7 @@ const VideoInput = ({ url, ws }: { url: string, ws?: WebSocket }) => {
 
   return (
     <div>
-      <input style={{ width: '100%' }} className="video-input" type="text" value={val} onChange={handleChange} placeholder="Enter a valid YouTube URL..." />
+      <input style={{ width: '100%' }} className="video-input" type="text" value={val} onChange={handleChange} placeholder={placeholder} />
     </div>
   )
 }

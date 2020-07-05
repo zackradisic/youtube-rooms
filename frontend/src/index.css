@@ -17,13 +17,17 @@ code {
     monospace;
 }
 
-.video-input{
-  color: #474747;
+.video-input {
+  color: #6e6e6e;
   background-color: #272727;
   border: none;
   border-radius: 5px;
   padding: 0.25rem;
   padding-left: 0.5rem;
+}
+
+.video-input::placeholder {
+  color: #474747;
 }
 
 .viewer-list {
