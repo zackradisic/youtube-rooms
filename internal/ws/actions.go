@@ -67,7 +67,7 @@ func getUsers(data interface{}, client *Client) (*HubMessage, error) {
 		ru := &roomUser{
 			DiscordID:           user.Model.DiscordID,
 			DiscordUsername:     user.Model.LastDiscordUsername,
-			DiscordDisriminator: user.Model.LastDiscordUsername,
+			DiscordDisriminator: user.Model.LastDiscordDiscriminator,
 		}
 
 		jr.Users = append(jr.Users, ru)
