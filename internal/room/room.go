@@ -19,8 +19,9 @@ type Room struct {
 // NewRoom returns a new room
 func NewRoom(model *models.Room) *Room {
 	return &Room{
-		Model: model,
-		Users: make([]*User, 0),
+		Model:     model,
+		Users:     make([]*User, 0),
+		IsPlaying: false,
 	}
 }
 
@@ -36,6 +37,13 @@ func (r *Room) SetIsPlaying(isPlaying bool) {
 	r.mux.Lock()
 	defer r.mux.Unlock()
 	r.IsPlaying = isPlaying
+}
+
+// GetIsPlaying returns whether or not the room is playing the video
+func (r *Room) GetIsPlaying() bool {
+	r.mux.Lock()
+	defer r.mux.Unlock()
+	return r.IsPlaying
 }
 
 // SetCurrentVideo sets this room's current video

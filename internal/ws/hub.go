@@ -80,6 +80,7 @@ func (h *Hub) broadcastMessage(message *HubMessage) {
 		if user.CurrentRoom.Model.Name == message.roomName {
 			select {
 			case h.users[user].send <- message.JSON:
+				fmt.Println(string(message.JSON))
 			default:
 				h.removeClient(h.users[user])
 			}

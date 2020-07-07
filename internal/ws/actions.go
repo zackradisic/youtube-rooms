@@ -92,6 +92,11 @@ func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
 		return nil, fmt.Errorf("Invalid data supplied")
 	}
 
+	fmt.Printf("Is playing? (%t)\n", client.user.CurrentRoom.GetIsPlaying())
+	if client.user.CurrentRoom.GetIsPlaying() == isPlaying {
+		return nil, fmt.Errorf("Room playing state is already: (%t)", isPlaying)
+	}
+
 	jr := &jsonResponse{
 		Action:    "set-video-playing",
 		IsPlaying: isPlaying,
@@ -102,7 +107,7 @@ func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
 		return nil, err
 	}
 
-	client.user.CurrentRoom.IsPlaying = true
+	client.user.CurrentRoom.SetIsPlaying(isPlaying)
 	return NewHubMessage(r, client.user.CurrentRoom), nil
 }
 
