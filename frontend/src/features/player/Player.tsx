@@ -9,6 +9,11 @@ import { User } from '../../api/youtube-rooms-API'
 import { extractYoutubeID } from '../../util'
 
 import { WebSocketContext } from '../../websocket/context'
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconDefinition } from '@fortawesome/fontawesome-common-types'
+import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
+
 import {
   Action,
   sendClientAction,
@@ -32,6 +37,12 @@ const styles = {
     fontWeight: 'normal',
     fontSize: '28px',
     paddingBottom: '1rem'
+  } as React.CSSProperties,
+  sectionTitle: {
+    letterSpacing: '0.305em',
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#9C9C9C'
   } as React.CSSProperties
 }
 
@@ -120,6 +131,8 @@ const Player = () => {
           </div>
         </div>
       </div>
+
+      <PlayerControls player={player} isPlaying={playerState.isPlaying} ws={ws.ws}/>
     </div>
   )
 }
@@ -129,7 +142,7 @@ const PlayerSidebar = ({ users }: { users: User[]}) => {
   return (
     <div className="columns is-multiline">
       <div className="column is-full">
-        <h1 style={{ letterSpacing: '0.305em', fontSize: '16px', fontWeight: 600, color: '#9C9C9C' }}>VIEWERS</h1>
+        <h1 style={styles.sectionTitle}>VIEWERS</h1>
         <ul className="viewer-list">
           {u}
         </ul>
@@ -140,12 +153,12 @@ const PlayerSidebar = ({ users }: { users: User[]}) => {
 
 const PlayerControls = ({ player, isPlaying, ws }: { player: any, isPlaying: boolean, ws?: WebSocket }) => {
   return (
-    <div className="columns is-multiline" style={{ paddingLeft: '1rem' }}>
+    <div className="columns is-multiline">
       <div className="column is-12">
-        <TogglePlay isPlaying={isPlaying} ws={ws}/>
+        <h1 style={styles.sectionTitle}>CONTROLS</h1>
       </div>
 
-      <div className="column is-12">
+      <div className="column is-8">
         <SeekControls player={player} ws={ws}/>
       </div>
     </div>
@@ -191,10 +204,24 @@ const SeekControls = ({ player, ws }: { player: any, ws?: WebSocket }) => {
     seekMinSec(+minutes, +seconds)
   }
   return (
-    <>
-      <h1><a onClick={() => seekOffset(offset * -1)}>👈</a> <a onClick={() => seekOffset(offset)}>👉</a></h1>
-      <input type="text" onKeyDown={handleKeyDown} onChange={handleChange} value={timeInput} placeholder="Enter a time..." />
-    </>
+    <div className="columns">
+      <div className="column is-4">
+        <SeekIcon onClick={() => seekOffset(offset * -1)} icon={faChevronLeft} />
+        <SeekIcon onClick={() => seekOffset(offset)} icon={faChevronRight} />
+      </div>
+
+      <div className="column">
+        <input className="video-input" type="text" onKeyDown={handleKeyDown} onChange={handleChange} value={timeInput} placeholder="Enter a time..." />
+      </div>
+    </div>
+  )
+}
+
+const SeekIcon = ({ icon, onClick }: { icon: IconDefinition, onClick: () => void }) => {
+  return (
+    <div onClick={onClick} className="seek-icon" style={{ width: '22px', height: '22px', borderRadius: '5px', backgroundColor: '#272727', display: 'inline-block', paddingTop: '2px', paddingLeft: '5px', paddingRight: '5px' }}>
+      <FontAwesomeIcon style={{ display: 'block', margin: 'auto', width: '8px', height: '16px' }} icon={icon} />
+    </div>
   )
 }
 
