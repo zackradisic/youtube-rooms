@@ -17,13 +17,14 @@ const WebSocketContext: React.Context<WSManager> = createContext({})
 
 export { WebSocketContext }
 
-const WebSocketProvider = (props: any) => {
+const WebSocketProvider = ({ children, roomName, roomPassword }: { children: React.ReactChild | React.ReactChild[], roomName: string, roomPassword?: string}) => {
   let wsManager: WSManager
 
   const dispatch = useDispatch()
 
   if (window.WebSocket) {
-    const con = new WebSocket('ws://localhost/ws?roomName=zack%27s%20room&roomPassword=test123')
+    const queryParams = `roomName=${roomName}` + (roomPassword ? `&roomPassword=${roomPassword}` : '')
+    const con = new WebSocket(`ws://localhost/ws?${queryParams}`)
     wsManager = { ws: con }
 
     con.onopen = () => {
@@ -41,7 +42,7 @@ const WebSocketProvider = (props: any) => {
 
     return (
       <WebSocketContext.Provider value={wsManager}>
-        {props.children}
+        {children}
       </WebSocketContext.Provider>
     )
   }
