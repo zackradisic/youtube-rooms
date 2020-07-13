@@ -23,6 +23,19 @@ func NewManager(db *gorm.DB) *Manager {
 	}
 }
 
+// GetRooms returns an array of all Rooms currently being managed
+func (m *Manager) GetRooms() []*Room {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	rooms := []*Room{}
+	for _, v := range m.rooms {
+		rooms = append(rooms, v)
+	}
+
+	return rooms
+}
+
 // GetRoom returns a room specified by the given name and caches it
 func (m *Manager) GetRoom(name string) (*Room, error) {
 	m.mux.Lock()

@@ -19,6 +19,7 @@ func (s *Server) setupRoutes() {
 	apiRouter := s.router.PathPrefix("/api/").Subrouter()
 	s.addRoute(apiRouter, "GET", "/auth/discord/", s.handleBeginAuth())
 	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.handleCompleteAuth())
+	s.addRoute(apiRouter, "GET", "/rooms/", s.handleGetRooms())
 
 	s.addRoute(s.router, "GET", "/ws", s.checkAuthentication(s.handleWS()))
 	s.addRoute(apiRouter, "GET", "/test", s.testRoute())
@@ -45,6 +46,50 @@ func (s *Server) testRoute() http.HandlerFunc {
 		if err := s.DB.Create(rm).Error; err != nil {
 			fmt.Println(err)
 		}
+	}
+}
+
+func (s *Server) handleGetRooms() http.HandlerFunc {
+	type jsonRoom struct {
+		ID                  uint   `json:"id"`
+		Name                string `json:"name"`
+		IsPasswordProtected bool   `json:"passwordProtected"`
+		UsersCount          int    `json:"usersCount"`
+	}
+
+	type jsonResponse struct {
+		Rooms []jsonRoom `json:"rooms"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		jr := &jsonResponse{
+			Rooms: []jsonRoom{},
+		}
+		rooms, err := s.getRooms()
+		if err != nil {
+			s.respondError(w, "Error retrieving rooms", http.StatusInternalServerError)
+			return
+		}
+
+		serverRooms := s.RoomManager.GetRooms()
+		for _, m := range *rooms {
+			userCount := 0
+			for _, r := range serverRooms {
+				if m.ID == r.Model.ID {
+					userCount = len(r.GetUsers())
+				}
+			}
+
+			jr.Rooms = append(jr.Rooms, jsonRoom{
+				ID:                  m.ID,
+				Name:                m.Name,
+				IsPasswordProtected: m.HashedPassword != "",
+				UsersCount:          userCount,
+			})
+		}
+
+		s.respondJSON(w, jr, http.StatusOK)
 	}
 }
 

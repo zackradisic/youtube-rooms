@@ -25,6 +25,15 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	return db, nil
 }
 
+func (s *Server) getRooms() (*[]models.Room, error) {
+	rooms := []models.Room{}
+	if err := s.DB.Find(&rooms).Error; err != nil {
+		return nil, err
+	}
+
+	return &rooms, nil
+}
+
 func (s *Server) createUser(userInfo *discordUserInfoResponse, authToken *AuthToken) (*models.User, error) {
 
 	user := &models.User{}
