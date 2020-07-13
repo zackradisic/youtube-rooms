@@ -11,3 +11,10 @@ export interface Video {
     title: string,
     requester: User['discordID']
 }
+
+export interface RoomPreview {
+    id: number,
+    name: string,
+    usersCount: number,
+    passwordProtected: boolean
+}

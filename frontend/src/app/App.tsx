@@ -3,6 +3,7 @@ import React from 'react'
 
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
+import Home from '../pages/home'
 import Room from '../pages/room'
 
 import logo from './logo.svg'
@@ -13,7 +14,7 @@ const App = () => {
     <Router>
       <Switch>
         <Route exact path="/">
-          <h1>hi</h1>
+          <Home />
         </Route>
 
         <Route path="/room/:roomName" children={<Room />} />
