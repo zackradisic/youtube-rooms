@@ -31,13 +31,21 @@ $input-focus-border-color: none;
 
 $section-padding: 3rem 6rem;
 
+$modal-card-body-background-color: #1D1D1D;
+$modal-card-head-background-color: #1D1D1D;
+$modal-card-head-border-bottom: none;
+$modal-card-foot-border-top: none;
+$modal-card-title-color: #E3E3E3;
+
 @import "../node_modules/bulma/sass/utilities/_all.sass";
+@import "../node_modules/bulma/sass/helpers/_all.sass";
 @import "../node_modules/bulma/sass/base/_all.sass";
 @import "../node_modules/bulma/sass/elements/button.sass";
 @import "../node_modules/bulma/sass/elements/container.sass";
 @import "../node_modules/bulma/sass/elements/title.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
 @import "../node_modules/bulma/sass/components/navbar.sass";
+@import "../node_modules/bulma/sass/components/modal.sass";
 @import "../node_modules/bulma/sass/layout/hero.sass";
 @import "../node_modules/bulma/sass/layout/section.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";

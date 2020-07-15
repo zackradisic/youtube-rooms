@@ -8,10 +8,10 @@ import Player from '../features/player/Player'
 import { useParams } from 'react-router-dom'
 
 const Room = () => {
-  const { name } = useParams()
+  const { roomName } = useParams()
   const { password } = useSelector((state: RootState) => state.roomCredentials)
   return (
-    <WebSocketProvider roomName={name} roomPassword={password}>
+    <WebSocketProvider roomName={roomName} roomPassword={password}>
       <Player />
     </WebSocketProvider>
   )

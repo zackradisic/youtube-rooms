@@ -51,3 +51,12 @@ code {
 input:focus, textarea:focus {
   outline: none;
 }
+
+.room-preview {
+  transition: .2s all ease-in-out;
+}
+
+.room-preview:hover {
+  cursor: pointer;
+  transform: scale(1.05)
+}
