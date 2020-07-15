@@ -49,7 +49,7 @@ func (m *Manager) GetRoom(name string) (*Room, error) {
 	room := &models.Room{
 		Name: name,
 	}
-	if err := m.DB.First(room).Error; err != nil {
+	if err := m.DB.First(room, "name = ?", room.Name).Error; err != nil {
 		return nil, fmt.Errorf("could not find that room (%s)", name)
 	}
 
