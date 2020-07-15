@@ -48,7 +48,7 @@ func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		fmt.Printf("Trying to authenticate: (%s)", idString)
+		fmt.Printf("Trying to authenticate: (%s)\n", idString)
 		user := &models.User{}
 
 		userAuth := &models.UserAuth{}
