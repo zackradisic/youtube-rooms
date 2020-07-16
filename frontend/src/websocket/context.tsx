@@ -23,7 +23,7 @@ const WebSocketProvider = ({ children, roomName, roomPassword }: { children: Rea
   const dispatch = useDispatch()
 
   if (window.WebSocket) {
-    const queryParams = `roomName=${encodeURI(roomName)}sdfsdfs` + (roomPassword ? `&roomPassword=${roomPassword}` : '')
+    const queryParams = `roomName=${encodeURI(roomName)}` + (roomPassword ? `&roomPassword=${roomPassword}` : '')
     console.log(queryParams)
     const con = new WebSocket(`ws://localhost/ws?${queryParams}`)
     wsManager = { ws: con }

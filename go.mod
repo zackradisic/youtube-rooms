@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/doug-martin/goqu v5.0.0+incompatible // indirect
+	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0

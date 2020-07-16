@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -16,13 +17,23 @@ import (
 )
 
 func (s *Server) setupRoutes() {
+	s.router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("test")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Origin, User-Agent, Referer, Cache-Control, X-header")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	})
 	apiRouter := s.router.PathPrefix("/api/").Subrouter()
 	s.addRoute(apiRouter, "GET", "/auth/discord/", s.handleBeginAuth())
 	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.handleCompleteAuth())
+	s.addRoute(apiRouter, "POST", "/rooms/verify/", s.handleVerifyPassword())
 	s.addRoute(apiRouter, "GET", "/rooms/", s.handleGetRooms())
 
+	s.addRoute(s.router, "POST", "/test", s.handleVerifyPassword())
+
 	s.addRoute(s.router, "GET", "/ws", s.checkAuthentication(s.handleWS()))
-	s.addRoute(apiRouter, "GET", "/test", s.testRoute())
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/build/static"))))
 	s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())
@@ -49,6 +60,54 @@ func (s *Server) testRoute() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleVerifyPassword() http.HandlerFunc {
+
+	type jsonData struct {
+		RoomName string `json:"roomName"`
+		Password string `json:"password"`
+	}
+
+	type requestBody struct {
+		Data jsonData `json:"data"`
+	}
+
+	type responseBody struct {
+		Success bool `json:"success"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		decoder := json.NewDecoder(r.Body)
+		body := &requestBody{}
+		err := decoder.Decode(body)
+
+		if err != nil {
+			fmt.Println("failed")
+			s.respondError(w, "Invalid request data", http.StatusBadRequest)
+			return
+		}
+
+		rm, err := s.RoomManager.GetRoom("zack's server")
+		if err != nil {
+			s.respondError(w, "Couldn't find that room", http.StatusNotFound)
+			return
+		}
+
+		ok, err := argon2.VerifyEncoded([]byte("test123"), []byte(rm.Model.HashedPassword))
+		if err != nil {
+			s.respondError(w, "Internal server error", 500)
+			return
+		}
+
+		if !ok {
+			s.respondJSON(w, "Invalid room password", http.StatusUnauthorized)
+			return
+		}
+
+		s.respondJSON(w, &responseBody{Success: true}, http.StatusOK)
+	}
+}
+
 func (s *Server) handleGetRooms() http.HandlerFunc {
 	type jsonRoom struct {
 		ID                  uint   `json:"id"`
@@ -62,7 +121,6 @@ func (s *Server) handleGetRooms() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 		jr := &jsonResponse{
 			Rooms: []jsonRoom{},
 		}

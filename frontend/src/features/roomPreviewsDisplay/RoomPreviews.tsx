@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconDefinition } from '@fortawesome/fontawesome-common-types'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { Dispatch } from '@reduxjs/toolkit'
+import { verifyRoomPassword } from '../../util'
 
 const style = {
   roomPreview: {
@@ -66,11 +67,15 @@ const RoomPreviews = () => {
 
   const toggleModal = () => setModalActive(!modalActive)
 
-  const enterPassword = (e: any) => {
+  const enterPassword = async (e: any) => {
     if (selectedRoom) {
+      const password = (document.getElementById('password-input') as HTMLInputElement).value
+      const valid = await verifyRoomPassword(password, selectedRoom.name)
+      console.log(valid)
+      if (!valid) return
       dispatch(setCredentials({
         name: selectedRoom.name,
-        password: (document.getElementById('password-input') as HTMLInputElement).value
+        password: password
       }))
 
       history.push('/room/' + encodeURI(selectedRoom.name))

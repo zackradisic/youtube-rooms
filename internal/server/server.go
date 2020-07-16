@@ -55,6 +55,10 @@ func NewServer() *Server {
 // Run runs the HTTP server
 func (s *Server) Run(host string) {
 	fmt.Println("Running server on " + host)
+	// originsOk := handlers.AllowedOrigins([]string{"*"})
+	// methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	//headersOk := handlers.AllowedHeaders([]string{"Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization"})
+	// mux.CORSMethodMiddleware(s.router)
 	log.Fatal(http.ListenAndServe(host, s.router))
 }
 
