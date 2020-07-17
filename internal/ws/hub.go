@@ -90,8 +90,23 @@ func (h *Hub) broadcastMessage(message *HubMessage) {
 }
 
 func (h *Hub) removeClient(client *Client) {
+	r := client.user.CurrentRoom
 	client.user.CurrentRoom.RemoveUser(client.user)
 	delete(h.clients, client)
 	delete(h.users, client.user)
 	close(client.send)
+
+	// This is probably not the best way to manually broadcast a HubMessage but it is the quickest
+	// solution with the current actions implementation.
+	//
+	// The actions system should have an additional layer of abstraction so that actions can be
+	// invoked irrespective of clients: decouple actions from the client
+	userProxy := &room.User{
+		CurrentRoom: r,
+	}
+	clientProxy := &Client{
+		user: userProxy,
+	}
+	msg, _ := getUsersAction(nil, clientProxy)
+	h.broadcastMessage(msg)
 }

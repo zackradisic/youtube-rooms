@@ -38,40 +38,48 @@ func NewActionInvoker() *ActionInvoker {
 		actions: make(map[string]action),
 	}
 
-	a.registerAction("set-video", selectVideo)
-	a.registerAction("set-video-playing", setVideoPlaying)
-	a.registerAction("seek-to", seekTo)
-	a.registerAction("get-users", getUsers)
+	a.registerAction("set-video", selectVideoAction)
+	a.registerAction("set-video-playing", setVideoPlayingAction)
+	a.registerAction("seek-to", seekToAction)
+	a.registerAction("get-users", getUsersAction)
 	return a
 }
 
-func getUsers(data interface{}, client *Client) (*HubMessage, error) {
-	type roomUser struct {
-		DiscordID           string `json:"discordID"`
-		DiscordUsername     string `json:"discordUsername"`
-		DiscordDisriminator string `json:"discordDiscriminator"`
-	}
+type roomUserJSON struct {
+	DiscordID           string `json:"discordID"`
+	DiscordUsername     string `json:"discordUsername"`
+	DiscordDisriminator string `json:"discordDiscriminator"`
+}
 
-	type jsonResponse struct {
-		Action string      `json:"action"`
-		Users  []*roomUser `json:"data"`
-	}
+func getUsersJSON(room *room.Room) []*roomUserJSON {
+	response := make([]*roomUserJSON, 0)
 
-	jr := &jsonResponse{
-		Action: "get-users",
-		Users:  make([]*roomUser, 0),
-	}
-
-	users := client.user.CurrentRoom.GetUsers()
+	users := room.GetUsers()
 	for _, user := range users {
-		ru := &roomUser{
+		ru := &roomUserJSON{
 			DiscordID:           user.Model.DiscordID,
 			DiscordUsername:     user.Model.LastDiscordUsername,
 			DiscordDisriminator: user.Model.LastDiscordDiscriminator,
 		}
 
-		jr.Users = append(jr.Users, ru)
+		response = append(response, ru)
 	}
+
+	return response
+}
+
+func getUsersAction(data interface{}, client *Client) (*HubMessage, error) {
+	type jsonResponse struct {
+		Action string          `json:"action"`
+		Users  []*roomUserJSON `json:"data"`
+	}
+
+	jr := &jsonResponse{
+		Action: "get-users",
+		Users:  make([]*roomUserJSON, 0),
+	}
+
+	jr.Users = getUsersJSON(client.user.CurrentRoom)
 
 	r, err := json.Marshal(jr)
 	if err != nil {
@@ -81,7 +89,7 @@ func getUsers(data interface{}, client *Client) (*HubMessage, error) {
 	return NewHubMessage(r, client.user.CurrentRoom), nil
 }
 
-func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
+func setVideoPlayingAction(data interface{}, client *Client) (*HubMessage, error) {
 	type jsonResponse struct {
 		Action    string `json:"action"`
 		IsPlaying bool   `json:"data"`
@@ -111,7 +119,7 @@ func setVideoPlaying(data interface{}, client *Client) (*HubMessage, error) {
 	return NewHubMessage(r, client.user.CurrentRoom), nil
 }
 
-func selectVideo(data interface{}, client *Client) (*HubMessage, error) {
+func selectVideoAction(data interface{}, client *Client) (*HubMessage, error) {
 	type jsonVideo struct {
 		URL       string `json:"url"`
 		Requester string `json:"requester"`
@@ -144,7 +152,7 @@ func selectVideo(data interface{}, client *Client) (*HubMessage, error) {
 	return NewHubMessage(j, client.user.CurrentRoom), nil
 }
 
-func seekTo(data interface{}, client *Client) (*HubMessage, error) {
+func seekToAction(data interface{}, client *Client) (*HubMessage, error) {
 	type jsonResponse struct {
 		Action string `json:"action"`
 		Data   int    `json:"data"`
