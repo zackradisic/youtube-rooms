@@ -37,7 +37,7 @@ const Room = () => {
 
   return (
     <WebSocketProvider roomName={roomName} roomPassword={password}>
-      <Player />
+      <Player name={name} />
     </WebSocketProvider>
   )
 }

@@ -157,13 +157,6 @@ func (s *Server) handleWS() http.HandlerFunc {
 			return
 		}
 
-		roomPassword, ok := params["roomPassword"]
-		if !ok {
-			fmt.Println("handleWS() -> Bad request")
-			s.respondError(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
 		if roomName[0] == "" {
 			fmt.Println("handleWS() -> Invalid room name")
 			s.respondError(w, "Invalid room name", http.StatusBadRequest)
@@ -178,6 +171,12 @@ func (s *Server) handleWS() http.HandlerFunc {
 		}
 
 		if rm.Model.HashedPassword != "" {
+			roomPassword, ok := params["roomPassword"]
+			if !ok {
+				fmt.Println("handleWS() -> Bad request")
+				s.respondError(w, "Bad Request", http.StatusBadRequest)
+				return
+			}
 			if roomPassword[0] == "" {
 				s.respondError(w, "Invalid room password", 403)
 				return

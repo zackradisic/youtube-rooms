@@ -46,7 +46,7 @@ const styles = {
   } as React.CSSProperties
 }
 
-const Player = () => {
+const Player = ({ name }: {name: string}) => {
   const users = useSelector((state: RootState) => state.usersDisplay)
   const playerState = useSelector((state: RootState) => state.player)
   const ws = React.useContext(WebSocketContext)
@@ -110,7 +110,7 @@ const Player = () => {
 
   return (
     <div className="section">
-      <h1 style={styles.title}>{playerState.current.title}</h1>
+      <h1 style={styles.title}>{name}</h1>
       <div className="columns">
         <div className="column">
           <div className="columns is-multiline">
