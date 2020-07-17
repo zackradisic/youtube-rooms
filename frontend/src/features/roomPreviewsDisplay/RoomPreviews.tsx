@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
 import { RoomPreview } from '../../api/youtube-rooms-API'
-import { setRoomPreviews } from '../roomPreviewsDisplay/index'
+import { setRoomPreviews, fetchRoomPreview } from '../roomPreviewsDisplay/index'
 import { setCredentials } from '../roomCredentials/index'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -38,17 +38,7 @@ const RoomPreviews = () => {
   useEffect(() => {
     const loadRoomPreviews = async () => {
       if (rooms.length === 0) {
-        try {
-          const res = await axios.get('http://localhost/api/rooms/')
-          if (!res.data.rooms) return
-          if (res.data.rooms.length === 0) return
-
-          if ((res.data.rooms as RoomPreview[])[0].id) {
-            dispatch(setRoomPreviews(res.data.rooms as RoomPreview[]))
-          }
-        } catch (err) {
-          console.log(err)
-        }
+        await dispatch(fetchRoomPreview())
       }
     }
 

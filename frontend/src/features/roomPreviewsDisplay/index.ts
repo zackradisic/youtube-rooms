@@ -1,5 +1,7 @@
+import axios from 'axios'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RoomPreview } from '../../api/youtube-rooms-API'
+import { AppThunk } from '../../app/store'
 
 export interface RoomPreviews {
     rooms: RoomPreview[]
@@ -27,6 +29,21 @@ const roomPreviewsSlice = createSlice({
     }
   }
 })
+
+export const fetchRoomPreview = (name?: string): AppThunk => async dispatch => {
+  const url = `http://localhost/api/rooms/${name ? encodeURI(name as string) : ''}`
+  try {
+    const res = await axios.get(url)
+    if (!res.data.rooms) return
+    if (res.data.rooms.length === 0) return
+
+    if ((res.data.rooms as RoomPreview[])[0].id) {
+      dispatch(setRoomPreviews(res.data.rooms as RoomPreview[]))
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
 
 export const {
   setRoomPreviews,
