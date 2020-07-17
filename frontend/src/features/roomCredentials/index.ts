@@ -6,8 +6,8 @@ interface RoomCredentials {
 }
 
 const initialState: RoomCredentials = {
-  name: "zack's room",
-  password: 'test123'
+  name: '',
+  password: ''
 }
 
 const roomCredentialsSlice = createSlice({
