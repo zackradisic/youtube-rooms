@@ -70,13 +70,19 @@ const RoomPreviews = () => {
   const enterPassword = async (e: any) => {
     if (selectedRoom) {
       const password = (document.getElementById('password-input') as HTMLInputElement).value
-      const valid = await verifyRoomPassword(password, selectedRoom.name)
-      console.log(valid)
-      if (!valid) return
-      dispatch(setCredentials({
-        name: selectedRoom.name,
-        password: password
-      }))
+      try {
+        const valid = await verifyRoomPassword(password, selectedRoom.name)
+        if (!valid) {
+          document.getElementById('password-context')!.innerText = 'That password is invalid.'
+          return
+        }
+        dispatch(setCredentials({
+          name: selectedRoom.name,
+          password: password
+        }))
+      } catch (err) {
+        return
+      }
 
       history.push('/room/' + encodeURI(selectedRoom.name))
     }
@@ -134,6 +140,7 @@ const PasswordPrompt = ({ dispatch, isActive, toggleModal, enterPassword }: {
         </section>
         <footer className="modal-card-foot">
           <button onClick={enterPassword} className="button is-success">Enter</button>
+          <p id="password-context" className="has-text-danger"></p>
         </footer>
       </div>
     </div>
