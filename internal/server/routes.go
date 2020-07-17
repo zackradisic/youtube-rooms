@@ -78,7 +78,7 @@ func (s *Server) handleVerifyPassword() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		decoder := json.NewDecoder(r.Body)
-		body := &requestBody{}
+		body := &jsonData{}
 		err := decoder.Decode(body)
 
 		if err != nil {
@@ -87,24 +87,20 @@ func (s *Server) handleVerifyPassword() http.HandlerFunc {
 			return
 		}
 
-		rm, err := s.RoomManager.GetRoom("zack's server")
+		rm, err := s.RoomManager.GetRoom(body.RoomName)
 		if err != nil {
+			fmt.Println(err.Error())
 			s.respondError(w, "Couldn't find that room", http.StatusNotFound)
 			return
 		}
 
-		ok, err := argon2.VerifyEncoded([]byte("test123"), []byte(rm.Model.HashedPassword))
+		ok, err := argon2.VerifyEncoded([]byte(body.Password), []byte(rm.Model.HashedPassword))
 		if err != nil {
 			s.respondError(w, "Internal server error", 500)
 			return
 		}
 
-		if !ok {
-			s.respondJSON(w, "Invalid room password", http.StatusUnauthorized)
-			return
-		}
-
-		s.respondJSON(w, &responseBody{Success: true}, http.StatusOK)
+		s.respondJSON(w, &responseBody{Success: ok}, http.StatusOK)
 	}
 }
 
@@ -121,6 +117,7 @@ func (s *Server) handleGetRooms() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		jr := &jsonResponse{
 			Rooms: []jsonRoom{},
 		}
