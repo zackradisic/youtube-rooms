@@ -62,6 +62,7 @@ const RoomPreviews = () => {
       return
     }
 
+    dispatch(setCredentials({ name: room.name }))
     history.push('/room/' + encodeURI(room.name))
   }
 
