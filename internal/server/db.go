@@ -25,10 +25,16 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func (s *Server) getRooms() (*[]models.Room, error) {
+func (s *Server) getRooms(name string) (*[]models.Room, error) {
 	rooms := []models.Room{}
-	if err := s.DB.Find(&rooms).Error; err != nil {
-		return nil, err
+	if name == "" {
+		if err := s.DB.Find(&rooms).Error; err != nil {
+			return nil, err
+		}
+	} else {
+		if err := s.DB.Find(&rooms, "name = ?", name).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	return &rooms, nil

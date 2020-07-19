@@ -121,7 +121,18 @@ func (s *Server) handleGetRooms() http.HandlerFunc {
 		jr := &jsonResponse{
 			Rooms: []jsonRoom{},
 		}
-		rooms, err := s.getRooms()
+
+		params := r.URL.Query()
+		roomName, ok := params["name"]
+		var rooms *[]models.Room
+		var err error
+		if !ok || len(roomName) == 0 {
+			rooms, err = s.getRooms("")
+
+		} else {
+			rooms, err = s.getRooms(roomName[0])
+		}
+
 		if err != nil {
 			s.respondError(w, "Error retrieving rooms", http.StatusInternalServerError)
 			return
