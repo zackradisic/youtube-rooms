@@ -25,7 +25,7 @@ const WebSocketProvider = ({ children, roomName, roomPassword }: { children: Rea
   if (window.WebSocket) {
     const queryParams = `roomName=${encodeURI(roomName)}` + (roomPassword ? `&roomPassword=${roomPassword}` : '')
     console.log(queryParams)
-    const con = new WebSocket(`ws://api.theatre.theradisic.com/ws?${queryParams}`)
+    const con = new WebSocket(`wss://api.theatre.theradisic.com/ws?${queryParams}`)
     wsManager = { ws: con }
 
     con.onopen = () => {
