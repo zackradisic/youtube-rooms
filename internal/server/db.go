@@ -1,6 +1,7 @@
 package server
 
 import (
+	"os"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -9,7 +10,7 @@ import (
 )
 
 func (s *Server) setupDB() (*gorm.DB, error) {
-	db, err := gorm.Open("mysql", "root@/youtube_rooms?charset=utf8mb4&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", os.Getenv("DB_CONNECTION_STRING"))
 	if err != nil {
 		return nil, err
 	}

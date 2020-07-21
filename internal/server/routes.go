@@ -25,15 +25,15 @@ func (s *Server) setupRoutes() {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	})
-	apiRouter := s.router.PathPrefix("/api/").Subrouter()
+	apiRouter := s.router.PathPrefix("/api/").Subrouter().StrictSlash(true)
 	s.addRoute(apiRouter, "GET", "/auth/discord/", s.handleBeginAuth())
-	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.handleCompleteAuth())
-	s.addRoute(apiRouter, "POST", "/rooms/verify/", s.handleVerifyPassword())
-	s.addRoute(apiRouter, "GET", "/rooms/", s.handleGetRooms())
+	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.rateLimited(s.handleCompleteAuth()))
+	s.addRoute(apiRouter, "POST", "/rooms/verify/", s.rateLimited(s.handleVerifyPassword()))
+	s.addRoute(apiRouter, "GET", "/rooms/", s.rateLimited(s.handleGetRooms()))
 
-	s.addRoute(s.router, "POST", "/test", s.handleVerifyPassword())
+	// s.addRoute(s.router, "POST", "/test", s.handleVerifyPassword())
 
-	s.addRoute(s.router, "GET", "/ws", s.checkAuthentication(s.handleWS()))
+	s.addRoute(s.router, "GET", "/ws", s.rateLimited(s.checkAuthentication(s.handleWS())))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./frontend/build/static"))))
 	s.router.PathPrefix("/").HandlerFunc(s.handleNonAPIRoute())

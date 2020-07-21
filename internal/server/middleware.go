@@ -13,6 +13,17 @@ type contextKey string
 const userKey contextKey = "user"
 const userAuthKey contextKey = "userAuth"
 
+func (s *Server) rateLimited(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := s.limiter.Wait(r.Context()); err != nil {
+			s.respondError(w, "Too many requests", http.StatusTooManyRequests)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}
+
 func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, err := s.sessionStore.Get(r, "session")

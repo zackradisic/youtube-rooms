@@ -29,16 +29,20 @@ const style = {
 }
 
 const RoomPreviews = () => {
-  const rooms = useSelector((state: RootState) => state.roomPreviews.rooms)
-  const [modalActive, setModalActive] = useState(false)
-  const [selectedRoom, setSelectedRoom] = useState<RoomPreview | null>(null)
   const history = useHistory()
   const dispatch = useDispatch()
 
+  const rooms = useSelector((state: RootState) => state.roomPreviews.rooms)
+
+  let fetched = false
+  const [modalActive, setModalActive] = useState(false)
+  const [selectedRoom, setSelectedRoom] = useState<RoomPreview | null>(null)
+
   useEffect(() => {
     const loadRoomPreviews = async () => {
-      if (rooms.length === 0) {
+      if (!fetched) {
         await dispatch(fetchRoomPreview())
+        fetched = true
       }
     }
 
@@ -53,7 +57,7 @@ const RoomPreviews = () => {
     }
 
     dispatch(setCredentials({ name: room.name }))
-    history.push('/room/' + encodeURI(room.name))
+    history.push('/rooms/' + encodeURI(room.name))
   }
 
   const toggleModal = () => setModalActive(!modalActive)
@@ -75,7 +79,7 @@ const RoomPreviews = () => {
         return
       }
 
-      history.push('/room/' + encodeURI(selectedRoom.name))
+      history.push('/rooms/' + encodeURI(selectedRoom.name))
     }
   }
 

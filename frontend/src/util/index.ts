@@ -10,7 +10,7 @@ export const verifyRoomPassword = async (password: string, roomName: string): Pr
 
   var config = {
     method: 'post',
-    url: 'http://localhost/api/rooms/verify/',
+    url: 'https://api.theatre.theradisic.com/api/rooms/verify/',
     data: data,
     validateStatus: () => true
   }

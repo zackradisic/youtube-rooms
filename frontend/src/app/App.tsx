@@ -17,7 +17,7 @@ const App = () => {
           <Home />
         </Route>
 
-        <Route path="/room/:roomName" children={<Room />} />
+        <Route path="/rooms/:roomName" children={<Room />} />
       </Switch>
     </Router>
   )

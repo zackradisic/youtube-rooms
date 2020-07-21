@@ -1,26 +1,31 @@
 import React, { useEffect } from 'react'
 
 import { RootState } from '../app/rootReducer'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useHistory, useParams } from 'react-router-dom'
 
 import WebSocketProvider, { WebSocketContext } from '../websocket/context'
 import Player from '../features/player/Player'
 import { RoomPreview } from '../api/youtube-rooms-API'
+import { fetchRoomPreview } from '../features/roomPreviewsDisplay'
 
 const Room = () => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const { roomName } = useParams()
   const { name, password } = useSelector((state: RootState) => state.roomCredentials)
-  const room = useSelector((state: RootState) => state.roomPreviews.rooms).find((r: RoomPreview) => r.name === name)
+  const rooms = useSelector((state: RootState) => state.roomPreviews.rooms)
+  const room = rooms.find((r: RoomPreview) => r.name === roomName)
 
   useEffect(() => {
-    // In the future this should make an API call to retrieve room info if
-    // it is not found in the state
-    if (!name || !room) {
-      history.push('/')
+    const a = async () => {
+      if (!name || !room) {
+        await dispatch(fetchRoomPreview(roomName))
+      }
     }
-  })
+
+    a()
+  }, [])
 
   if (!password && room?.passwordProtected) {
     return (

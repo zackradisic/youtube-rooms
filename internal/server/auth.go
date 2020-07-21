@@ -71,7 +71,7 @@ func (s *Server) getAuthorizationCode(code string) (*AuthToken, error) {
 	// For some reason Discord gives me errors if I pass in the url encoded data generated from
 	// url.Values.Encode() so I am just going to concatenate strings like this until I figure out
 	// what is causing the problem.
-	data := "code=" + code + "&client_id=722724036706041976&client_secret=" + s.authDetails.ClientSecret + "&redirect_uri=http%3A//localhost/api/auth/discord/callback&scope=identify&grant_type=authorization_code"
+	data := "code=" + code + "&client_id=722724036706041976&client_secret=" + s.authDetails.ClientSecret + "&redirect_uri=https%3A//api.theatre.theradisic.com/api/auth/discord/callback&scope=identify&grant_type=authorization_code"
 	req, err := http.NewRequest("POST", link, strings.NewReader(data))
 	if err != nil {
 		return nil, err
