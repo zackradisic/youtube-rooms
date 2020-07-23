@@ -10,6 +10,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.14
 	github.com/joho/godotenv v1.3.0
+	github.com/koding/websocketproxy v0.0.0-20181220232114-7ed82d81a28c // indirect
 	github.com/matthewhartstonge/argon2 v0.1.4
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 )

@@ -64,7 +64,12 @@ func (s *Server) Run(host string) {
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	headersOk := handlers.AllowedHeaders([]string{"Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization"})
 	// mux.CORSMethodMiddleware(s.router)
-	log.Fatal(http.ListenAndServe(host, handlers.CORS(originsOk, methodsOk, headersOk)(s.router)))
+
+	if os.Getenv("DEV") == "true" {
+		log.Fatal(http.ListenAndServeTLS(":443", "cert.pem", "key.pem", handlers.CORS(originsOk, methodsOk, headersOk)(s.router)))
+	} else {
+		log.Fatal(http.ListenAndServe(host, handlers.CORS(originsOk, methodsOk, headersOk)(s.router)))
+	}
 }
 
 func (s *Server) respondJSON(w http.ResponseWriter, payload interface{}, status int) {

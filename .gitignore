@@ -1,2 +1,4 @@
 .env
 todo.txt
+cert.pem
+key.pem

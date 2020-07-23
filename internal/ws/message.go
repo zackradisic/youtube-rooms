@@ -11,17 +11,16 @@ type ClientMessage struct {
 
 // HubMessage is a message sent by the hub to a WebSocket client
 type HubMessage struct {
-	JSON     []byte
-	roomName string
-	room     *room.Room
+	JSON       []byte
+	room       *room.Room
+	recipients []*room.User
 }
 
 // NewHubMessage returns a hub message
-func NewHubMessage(jsonData []byte, room *room.Room) *HubMessage {
+func NewHubMessage(jsonData []byte, room *room.Room, recipients []*room.User) *HubMessage {
 
 	return &HubMessage{
-		JSON:     jsonData,
-		roomName: room.Model.Name,
-		room:     room,
+		JSON: jsonData,
+		room: room,
 	}
 }

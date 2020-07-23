@@ -6,6 +6,7 @@ import * as serviceWorker from './serviceWorker'
 import store from './app/store'
 import { Provider } from 'react-redux'
 
+console.log(process.env)
 const render = () => {
   const App = require('./app/App').default
   ReactDOM.render(

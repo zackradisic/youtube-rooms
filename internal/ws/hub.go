@@ -56,7 +56,7 @@ func (h *Hub) Run() {
 		case client := <-h.register:
 			h.clients[client] = true
 			h.users[client.user] = client
-			fmt.Println("Registed client: " + client.user.Model.DiscordID)
+			fmt.Println("Registered client: " + client.user.Model.DiscordID)
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				h.removeClient(client)
@@ -76,16 +76,30 @@ func (h *Hub) Run() {
 
 func (h *Hub) broadcastMessage(message *HubMessage) {
 
-	for user := range h.users {
-		if user.CurrentRoom.Model.Name == message.roomName {
-			select {
-			case h.users[user].send <- message.JSON:
-				fmt.Println(string(message.JSON))
-			default:
-				h.removeClient(h.users[user])
-			}
-
+	if message.recipients != nil {
+		for _, recipient := range message.recipients {
+			h.send(message.JSON, h.users[recipient])
 		}
+	} else if message.room != nil {
+		for user, client := range h.users {
+			if user.CurrentRoom.Model.Name == message.room.Model.Name {
+				h.send(message.JSON, client)
+			}
+		}
+	} else {
+		fmt.Println("broadcastMessage() -> Received message with no recipients or room specified")
+	}
+}
+
+func (h *Hub) send(msg []byte, client *Client) {
+	if client == nil {
+		return
+	}
+
+	select {
+	case client.send <- msg:
+	default:
+		h.removeClient(client)
 	}
 }
 

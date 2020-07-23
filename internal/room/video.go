@@ -2,8 +2,8 @@ package room
 
 // Video represents a YouTube video a room can play
 type Video struct {
-	URL       string
-	Title     string
+	URL       string `json:"url"`
+	Title     string `json:"title"`
 	Requester *User
 }
 

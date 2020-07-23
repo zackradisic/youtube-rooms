@@ -86,7 +86,7 @@ func getUsersAction(data interface{}, client *Client) (*HubMessage, error) {
 		return nil, err
 	}
 
-	return NewHubMessage(r, client.user.CurrentRoom), nil
+	return NewHubMessage(r, client.user.CurrentRoom, nil), nil
 }
 
 func setVideoPlayingAction(data interface{}, client *Client) (*HubMessage, error) {
@@ -116,7 +116,7 @@ func setVideoPlayingAction(data interface{}, client *Client) (*HubMessage, error
 	}
 
 	client.user.CurrentRoom.SetIsPlaying(isPlaying)
-	return NewHubMessage(r, client.user.CurrentRoom), nil
+	return NewHubMessage(r, client.user.CurrentRoom, nil), nil
 }
 
 func selectVideoAction(data interface{}, client *Client) (*HubMessage, error) {
@@ -149,7 +149,7 @@ func selectVideoAction(data interface{}, client *Client) (*HubMessage, error) {
 
 	video := room.NewVideo(url, client.user)
 	client.user.CurrentRoom.SetCurrentVideo(video)
-	return NewHubMessage(j, client.user.CurrentRoom), nil
+	return NewHubMessage(j, client.user.CurrentRoom, nil), nil
 }
 
 func seekToAction(data interface{}, client *Client) (*HubMessage, error) {
@@ -176,7 +176,7 @@ func seekToAction(data interface{}, client *Client) (*HubMessage, error) {
 		return nil, err
 	}
 
-	return NewHubMessage(j, client.user.CurrentRoom), nil
+	return NewHubMessage(j, client.user.CurrentRoom, nil), nil
 }
 
 // Maybe there is something we can do to make this code more DRY?
