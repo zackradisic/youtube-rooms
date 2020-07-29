@@ -8,9 +8,9 @@ export const verifyRoomPassword = async (password: string, roomName: string): Pr
   var axios = require('axios')
   var data = JSON.stringify({ roomName: roomName, password: password })
 
-  var config = {
+  const config = {
     method: 'post',
-    url: 'https://api.theatre.theradisic.com/api/rooms/verify/',
+    url: `${process.env.REACT_APP_API_URL}/api/rooms/verify/`,
     data: data,
     validateStatus: () => true
   }
@@ -19,5 +19,6 @@ export const verifyRoomPassword = async (password: string, roomName: string): Pr
   if (res.status !== 200) {
     throw new Error(res.data.error)
   }
+
   return !!res.data.success
 }

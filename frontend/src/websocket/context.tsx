@@ -25,15 +25,15 @@ const WebSocketProvider = ({ children, roomName, roomPassword }: { children: Rea
   if (window.WebSocket) {
     const queryParams = `roomName=${encodeURI(roomName)}` + (roomPassword ? `&roomPassword=${roomPassword}` : '')
     console.log(queryParams)
-    const con = new WebSocket(`wss://${process.env.REACT_APP_API_URL}/ws?${queryParams}`)
+    const con = new WebSocket(`${process.env.NODE_ENV === 'development' ? 'ws://' : 'wss://'}${process.env.REACT_APP_API_ORIGIN}/ws?${queryParams}`)
     wsManager = { ws: con }
 
     con.onopen = () => {
-      console.log('WebSocket connection opened')
+      console.log('WebSocket connection opened!!1!')
       const getUsers = JSON.stringify({ action: Action.GetUsers, data: null })
-      const sample = JSON.stringify({ action: Action.SetVideo, data: 'https://www.youtube.com/watch?v=YT127qw8eQQ' })
+      const init = JSON.stringify({ action: Action.InitClient, data: null })
       con.send(getUsers)
-      setTimeout(() => con.send(sample), 3000)
+      con.send(init)
     }
 
     con.onmessage = e => {

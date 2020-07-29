@@ -5,6 +5,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/zackradisic/youtube-rooms/internal/room"
@@ -115,12 +116,11 @@ func (h *Hub) removeClient(client *Client) {
 	//
 	// The actions system should have an additional layer of abstraction so that actions can be
 	// invoked irrespective of clients: decouple actions from the client
-	userProxy := &room.User{
-		CurrentRoom: r,
+	users := getUsersJSON(r)
+	data, err := json.Marshal(&users)
+	if err != nil {
+		return
 	}
-	clientProxy := &Client{
-		user: userProxy,
-	}
-	msg, _ := getUsersAction(nil, clientProxy)
+	msg := NewHubMessage(data, r, nil)
 	h.broadcastMessage(msg)
 }

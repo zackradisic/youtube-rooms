@@ -19,8 +19,17 @@ type HubMessage struct {
 // NewHubMessage returns a hub message
 func NewHubMessage(jsonData []byte, room *room.Room, recipients []*room.User) *HubMessage {
 
-	return &HubMessage{
-		JSON: jsonData,
-		room: room,
+	if room != nil {
+		return &HubMessage{
+			JSON: jsonData,
+			room: room,
+		}
+	} else if recipients != nil {
+		return &HubMessage{
+			JSON:       jsonData,
+			recipients: recipients,
+		}
 	}
+
+	return nil
 }

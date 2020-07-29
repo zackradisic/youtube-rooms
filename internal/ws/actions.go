@@ -42,6 +42,7 @@ func NewActionInvoker() *ActionInvoker {
 	a.registerAction("set-video-playing", setVideoPlayingAction)
 	a.registerAction("seek-to", seekToAction)
 	a.registerAction("get-users", getUsersAction)
+	a.registerAction("init-client", initClientAction)
 	return a
 }
 
@@ -49,6 +50,45 @@ type roomUserJSON struct {
 	DiscordID           string `json:"discordID"`
 	DiscordUsername     string `json:"discordUsername"`
 	DiscordDisriminator string `json:"discordDiscriminator"`
+}
+
+func initClientAction(data interface{}, client *Client) (*HubMessage, error) {
+	type currentVideoJSON struct {
+		Title     string `json:"title"`
+		URL       string `json:"url"`
+		Requester string `json:"requester"`
+	}
+
+	type jsonResponse struct {
+		Action  string           `json:"action"`
+		Current currentVideoJSON `json:"data"`
+	}
+
+	jr := &jsonResponse{
+		Action:  "init-client",
+		Current: currentVideoJSON{},
+	}
+
+	title := ""
+	url := ""
+	requester := ""
+
+	if client.user.CurrentRoom.Current != nil {
+		title = client.user.CurrentRoom.Current.Title
+		url = client.user.CurrentRoom.Current.URL
+		requester = client.user.CurrentRoom.Current.Requester.DiscordHandle()
+	}
+
+	jr.Current.Title = title
+	jr.Current.URL = url
+	jr.Current.Requester = requester
+
+	r, err := json.Marshal(jr)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewHubMessage(r, nil, []*room.User{client.user}), nil
 }
 
 func getUsersJSON(room *room.Room) []*roomUserJSON {

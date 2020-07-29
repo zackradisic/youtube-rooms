@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '../../util/axios'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RoomPreview } from '../../api/youtube-rooms-API'
 import { AppThunk } from '../../app/store'
@@ -31,7 +31,7 @@ const roomPreviewsSlice = createSlice({
 })
 
 export const fetchRoomPreview = (name?: string): AppThunk => async dispatch => {
-  const url = `https://${process.env.REACT_APP_API_URL}/api/rooms${name ? '?name=' + encodeURI(name as string) : ''}`
+  const url = `${process.env.REACT_APP_API_URL}/api/rooms${name ? '?name=' + encodeURI(name as string) : '/'}`
   try {
     const res = await axios.get(url)
     if (!res.data.rooms) return
