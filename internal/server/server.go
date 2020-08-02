@@ -52,6 +52,7 @@ func NewServer() *Server {
 	s.RoomManager = room.NewManager(db)
 	s.Hub = ws.NewHub(s.RoomManager)
 	go s.Hub.Run()
+	s.RoomManager.ListenForVideoSave()
 
 	return s
 }

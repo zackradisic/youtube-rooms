@@ -14,6 +14,8 @@ type Room struct {
 	Users     []*User
 	Current   *Video
 	IsPlaying bool
+	saveVideo chan *SaveVideoRequest
+	LastVideo *models.Video
 }
 
 // NewRoom returns a new room
@@ -51,6 +53,9 @@ func (r *Room) SetCurrentVideo(video *Video) {
 	r.mux.Lock()
 	defer r.mux.Unlock()
 	r.Current = video
+	go func() {
+		r.saveVideo <- &SaveVideoRequest{Video: video, Room: r}
+	}()
 }
 
 // AddUser adds a user to the room

@@ -77,6 +77,10 @@ func initClientAction(data interface{}, client *Client) (*HubMessage, error) {
 		title = client.user.CurrentRoom.Current.Title
 		url = client.user.CurrentRoom.Current.URL
 		requester = client.user.CurrentRoom.Current.Requester.DiscordHandle()
+	} else {
+		title = client.user.CurrentRoom.LastVideo.Title
+		url = "https://youtube.com/watch?v=" + client.user.CurrentRoom.LastVideo.YoutubeID
+		requester = ""
 	}
 
 	jr.Current.Title = title

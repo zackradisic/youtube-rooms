@@ -16,12 +16,13 @@ func (s *Server) setupDB() (*gorm.DB, error) {
 	}
 
 	// Be careful! AutoMigrate() won't update existing columns or delete them!
-	user, userAuth, room, video := &models.User{}, &models.UserAuth{}, &models.Room{}, &models.Video{}
-	db.AutoMigrate(user, userAuth, room, video)
+	user, userAuth, room, roomVideo, video := &models.User{}, &models.UserAuth{}, &models.Room{}, &models.RoomVideo{}, &models.Video{}
+	db.AutoMigrate(user, userAuth, room, roomVideo, video)
 	db.Model(&models.UserAuth{}).AddForeignKey("user_id", "users(id)", "CASCADE", "CASCADE")
 	db.Model(&models.Room{}).AddForeignKey("owner_id", "users(id)", "CASCADE", "CASCADE")
-	db.Model(&models.Video{}).AddForeignKey("room_id", "rooms(id)", "CASCADE", "CASCADE")
-	db.Model(&models.Video{}).AddForeignKey("requester_id", "users(id)", "CASCADE", "CASCADE")
+	db.Model(&models.RoomVideo{}).AddForeignKey("room_id", "rooms(id)", "CASCADE", "CASCADE")
+	db.Model(&models.RoomVideo{}).AddForeignKey("requester_id", "users(id)", "CASCADE", "CASCADE")
+	db.Model(&models.RoomVideo{}).AddIndex("idx_room_videos_created_at", "created_at")
 
 	return db, nil
 }
