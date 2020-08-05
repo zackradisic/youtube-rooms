@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/zackradisic/youtube-rooms/internal/room"
+	"github.com/zackradisic/youtube-rooms/internal/ytservice"
 )
 
 // ActionInvoker manages and invokes actions
@@ -192,6 +193,14 @@ func selectVideoAction(data interface{}, client *Client) (*HubMessage, error) {
 	}
 
 	video := room.NewVideo(url, client.user)
+	title, err := ytservice.GetTitle(video.ExtractID())
+	if err != nil {
+		return nil, err
+	}
+	if title == "" {
+		return nil, fmt.Errorf("Cannot find title of video given by id: (%s)", video.ExtractID())
+	}
+	video.Title = title
 	client.user.CurrentRoom.SetCurrentVideo(video)
 	return NewHubMessage(j, client.user.CurrentRoom, nil), nil
 }

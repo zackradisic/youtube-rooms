@@ -13,6 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/zackradisic/youtube-rooms/internal/room"
 	"github.com/zackradisic/youtube-rooms/internal/ws"
+	"github.com/zackradisic/youtube-rooms/internal/ytservice"
 
 	"github.com/gorilla/mux"
 
@@ -33,6 +34,7 @@ type Server struct {
 
 // NewServer creates a server
 func NewServer() *Server {
+	ytservice.InitYouTubeService()
 	a := argon2.DefaultConfig()
 	s := &Server{
 		router:       mux.NewRouter().StrictSlash(true),

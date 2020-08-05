@@ -59,12 +59,12 @@ func (m *Manager) GetRoom(name string) (*Room, error) {
 	newRoom := NewRoom(room)
 	newRoom.saveVideo = m.saveVideo
 
-	lastVideo := &models.RoomVideo{}
-	if err := m.DB.Where("room_id = ?", room.ID).Last(lastVideo).Error; err != nil {
-		newRoom.LastVideo = lastVideo
-	} else {
+	lastVideo, err := m.getLatestVideo(room.ID)
+	if err != nil {
 		return nil, err
 	}
+
+	newRoom.LastVideo = lastVideo
 
 	m.rooms[room.Name] = newRoom
 
@@ -78,7 +78,7 @@ func (m *Manager) getLatestVideo(roomID uint) (*models.Video, error) {
 	}
 
 	r := &result{}
-	stmt := "SELECT v.title, v.youtube_id FROM room_videos rv, videos v WHERE rv.video_id = v.id AND rv.room_id = $1 ORDER BY rv.created_at DESC LIMIT 1"
+	stmt := "SELECT v.title, v.youtube_id FROM room_videos rv, videos v WHERE rv.video_id = v.id AND rv.room_id = ? ORDER BY rv.created_at DESC LIMIT 1"
 	err := m.DB.Raw(stmt, roomID).Scan(r).Error
 	if err != nil {
 		return nil, err

@@ -45,12 +45,11 @@ export const parsePayload = (json: any, dispatch: Dispatch<any>) => {
     dispatch(seekTo(payload.data as number))
   } else if ((json as GetUsersPayload).action === Action.GetUsers) {
     const payload = json as GetUsersPayload
-    console.log(payload)
     dispatch(setUsers(payload.data))
   } else if ((json as InitPayload).action === Action.InitClient) {
     const payload = json as InitPayload
     const video = { url: payload.data.url, title: payload.data.title, requester: payload.data.requester }
-    if (video.url === '') {
+    if (video.url !== '') {
       dispatch(setCurrent(video))
     }
   }
