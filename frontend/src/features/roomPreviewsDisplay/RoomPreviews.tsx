@@ -50,6 +50,7 @@ const RoomPreviews = () => {
   }, [])
 
   const onClick = (room: RoomPreview) => {
+    console.log(room)
     if (room.passwordProtected) {
       setSelectedRoom(room)
       setModalActive(true)
@@ -88,8 +89,12 @@ const RoomPreviews = () => {
     <div className="section">
       <div className="container">
         <div className="columns is-multiline">
-          <div className="column is-12">
+          <div className="column is-6">
             <h1 style={style.title}>Rooms</h1>
+          </div>
+          <div className="column is-6 has-text-right" style={{ verticalAlign: 'text-bottom' }}>
+            <h1 style={{ color: 'rgb(22, 22, 22)' }}>h</h1>
+            <h1 style={{ ...style.title, fontSize: '16px' }}>Logged in as: zack#6593</h1>
           </div>
           {roomsDOM}
           <PasswordPrompt enterPassword={enterPassword} dispatch={dispatch} isActive={modalActive} toggleModal={toggleModal} />
