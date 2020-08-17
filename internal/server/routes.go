@@ -60,6 +60,14 @@ func (s *Server) testRoute() http.HandlerFunc {
 	}
 }
 
+func (s *Server) meRoute() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	}
+}
+
 func (s *Server) handleVerifyPassword() http.HandlerFunc {
 
 	type jsonData struct {
