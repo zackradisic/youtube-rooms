@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -302,7 +303,7 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 				session.Values["access_token"] = authToken.AccessToken
 				session.Save(r, w)
 
-				s.respondJSON(w, re, http.StatusOK)
+				http.Redirect(w, r, os.Getenv("FRONTNED_URL"), http.StatusPermanentRedirect)
 				return
 			}
 		}
