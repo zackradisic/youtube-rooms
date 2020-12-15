@@ -31,6 +31,7 @@ func (s *Server) setupRoutes() {
 	s.addRoute(apiRouter, "GET", "/auth/discord/callback", s.rateLimited(s.handleCompleteAuth()))
 	s.addRoute(apiRouter, "POST", "/rooms/verify/", s.rateLimited(s.handleVerifyPassword()))
 	s.addRoute(apiRouter, "GET", "/rooms/", s.rateLimited(s.handleGetRooms()))
+	s.addRoute(apiRouter, "GET", "/me", s.checkAuthentication(s.meRoute()))
 
 	// s.addRoute(s.router, "POST", "/test", s.handleVerifyPassword())
 
@@ -62,10 +63,42 @@ func (s *Server) testRoute() http.HandlerFunc {
 }
 
 func (s *Server) meRoute() http.HandlerFunc {
-
+	type response struct {
+		ID            string `json:"discordId"`
+		Username      string `json:"discordUsername"`
+		Discriminator string `json:"discordDiscriminator"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		session, err := s.sessionStore.Get(r, "session")
+		if err != nil {
+			s.respondError(w, err.Error(), 403)
+			return
+		}
 
+		accessTokenRaw := session.Values["access_token"]
+		if accessToken, ok := accessTokenRaw.(string); ok {
+
+			if accessToken == "" {
+				s.respondError(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			userInfo, err := s.getDiscordUserInfo(accessToken, "")
+			if err != nil {
+				fmt.Println(err.Error())
+				s.respondError(w, "Internal server error occurred", http.StatusInternalServerError)
+				return
+			}
+
+			res := &response{}
+			res.ID = userInfo.ID
+			res.Username = userInfo.Username
+			res.Discriminator = userInfo.Discriminator
+
+			s.respondJSON(w, res, http.StatusOK)
+			return
+		}
 	}
 }
 
