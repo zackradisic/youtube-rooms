@@ -69,7 +69,7 @@ func (s *Server) meRoute() http.HandlerFunc {
 		Discriminator string `json:"discordDiscriminator"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "https://theatre.theradisic.com")
 		session, err := s.sessionStore.Get(r, "session")
 		if err != nil {
 			s.respondError(w, err.Error(), 403)
