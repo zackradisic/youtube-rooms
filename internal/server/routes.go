@@ -303,7 +303,7 @@ func (s *Server) handleCompleteAuth() http.HandlerFunc {
 				session.Values["access_token"] = authToken.AccessToken
 				session.Save(r, w)
 
-				http.Redirect(w, r, os.Getenv("FRONTNED_URL"), http.StatusPermanentRedirect)
+				http.Redirect(w, r, os.Getenv("FRONTEND_URL"), http.StatusPermanentRedirect)
 				return
 			}
 		}
