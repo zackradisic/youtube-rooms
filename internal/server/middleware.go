@@ -26,6 +26,8 @@ func (s *Server) rateLimited(next http.HandlerFunc) http.HandlerFunc {
 
 func (s *Server) checkAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		session, err := s.sessionStore.Get(r, "session")
 		if err != nil {
 			s.respondError(w, err.Error(), 403)
